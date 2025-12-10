@@ -21,6 +21,7 @@ public:
     void placePlayerAt(int x, int y, float angle);
     void addWallTexture(const char* filePath);
     void loadFloorTexture(const char* filePath);
+    void loadCeilingTexture(const char* filePath);
 private:
     bool isRunning;
     SDL_Window *window;
@@ -37,6 +38,8 @@ private:
     std::vector<int> textureHeights;
     SDL_Texture* floorTexture;
     std::pair<int, int> floorTextureHeightWidth;
+    SDL_Texture* ceilingTexture;
+    std::pair<int, int> ceilingTextureHeightWidth;
 };
 
 #endif

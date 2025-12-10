@@ -243,7 +243,30 @@ void Game::render()
                 SDL_RenderCopy(renderer, floorTexture, &srcRect, &destRect);
             }
         }
+        
+        // Draw ceiling
+        for(int y = 0; y < drawStart; y++) {
+            if(ceilingTexture) {
+                int imgWidth = ceilingTextureHeightWidth.first;
+                int imgHeight = ceilingTextureHeightWidth.second;
 
+                float rowDist = playerHeight / (0.5f - (float)y / ScreenHeightWidth.second);
+
+                // Interpolate ceiling coordinates
+                float ceilX = playerPosition.first + rowDist * rayDirX;
+                float ceilY = playerPosition.second + rowDist * rayDirY;
+
+                int texX = ((int)(ceilX * imgWidth)) % imgWidth;
+                int texY = ((int)(ceilY * imgHeight)) % imgHeight;
+
+                SDL_Rect srcRect  = { texX, texY, 1, 1 };
+                SDL_Rect destRect = { ray, y, 1, 1 };
+                SDL_RenderCopy(renderer, ceilingTexture, &srcRect, &destRect);
+            } else {
+                SDL_SetRenderDrawColor(renderer, 135, 206, 235, 255); // Sky color
+                SDL_RenderDrawPoint(renderer, ray, y);
+            }
+        }
     }
 
     SDL_RenderPresent(renderer);  
@@ -292,6 +315,16 @@ void Game::loadFloorTexture(const char* filePath) {
     int width, height;
     SDL_QueryTexture(floorTexture, NULL, NULL, &width, &height);
     floorTextureHeightWidth = std::make_pair(width, height);
+}
+void Game::loadCeilingTexture(const char* filePath) {
+    ceilingTexture = IMG_LoadTexture(renderer, filePath);
+    if (!ceilingTexture) {
+        std::cerr << "Failed to load ceiling texture: " << filePath << " Error: " << IMG_GetError() << std::endl;
+        return;
+    }
+    int width, height;
+    SDL_QueryTexture(ceilingTexture, NULL, NULL, &width, &height);
+    ceilingTextureHeightWidth = std::make_pair(width, height);
 }
 void Game::clean()
 {
