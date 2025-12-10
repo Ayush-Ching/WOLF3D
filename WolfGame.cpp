@@ -114,7 +114,14 @@ void Game::render()
 {
     SDL_SetRenderDrawColor(renderer, 135, 206, 235, 255);
     SDL_RenderClear(renderer);   
+    // Draw floor
+    if (!floorTexture) {
+        SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+        SDL_Rect floorRect = {0, ScreenHeightWidth.second / 2, ScreenHeightWidth.first, ScreenHeightWidth.second / 2};
+        SDL_RenderFillRect(renderer, &floorRect);
+    }
 
+    // Raycasting for walls
     int raysCount = ScreenHeightWidth.first;
     float fovRad = FOV * (3.14159f / 180.0f);
     float halfFov = fovRad / 2.0f;
@@ -216,6 +223,27 @@ void Game::render()
         SDL_Rect destRect = { ray, drawStart, 1, drawEnd - drawStart };
         SDL_RenderCopy(renderer, wallTextures[texId], &srcRect, &destRect);
 
+        // Draw floor texture
+        if (floorTexture) {
+            int floorScreenStart = drawEnd; // start drawing floor below the wall
+            imgHeight = floorTextureHeightWidth.second;
+            imgWidth = floorTextureHeightWidth.first;
+            for (int y = drawEnd; y < ScreenHeightWidth.second; y++) {
+                float rowDist = playerHeight / ((float)y / ScreenHeightWidth.second - 0.5f);
+
+                // Interpolate floor coordinates
+                float floorX = playerPosition.first + rowDist * rayDirX;
+                float floorY = playerPosition.second + rowDist * rayDirY;
+
+                int texX = ((int)(floorX * imgWidth)) % imgWidth;
+                int texY = ((int)(floorY * imgHeight)) % imgHeight;
+
+                SDL_Rect srcRect  = { texX, texY, 1, 1 };
+                SDL_Rect destRect = { ray, y, 1, 1 };
+                SDL_RenderCopy(renderer, floorTexture, &srcRect, &destRect);
+            }
+        }
+
     }
 
     SDL_RenderPresent(renderer);  
@@ -243,7 +271,6 @@ void Game::placePlayerAt(int x, int y, float angle) {
     playerPosition = {static_cast<double>(x), static_cast<double>(y)};
     playerAngle = angle;
 }
-
 void Game::addWallTexture(const char* filePath) {
     SDL_Texture* texture = IMG_LoadTexture(renderer, filePath);
     if (!texture) {
@@ -256,7 +283,16 @@ void Game::addWallTexture(const char* filePath) {
     textureWidths.push_back(width);
     textureHeights.push_back(height);
 }
-
+void Game::loadFloorTexture(const char* filePath) {
+    floorTexture = IMG_LoadTexture(renderer, filePath);
+    if (!floorTexture) {
+        std::cerr << "Failed to load floor texture: " << filePath << " Error: " << IMG_GetError() << std::endl;
+        return;
+    }
+    int width, height;
+    SDL_QueryTexture(floorTexture, NULL, NULL, &width, &height);
+    floorTextureHeightWidth = std::make_pair(width, height);
+}
 void Game::clean()
 {
     SDL_DestroyRenderer(renderer);

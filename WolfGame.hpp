@@ -20,11 +20,13 @@ public:
     void loadColorConfigFromFile(const char* filename);
     void placePlayerAt(int x, int y, float angle);
     void addWallTexture(const char* filePath);
+    void loadFloorTexture(const char* filePath);
 private:
     bool isRunning;
     SDL_Window *window;
     SDL_Renderer *renderer;
     float playerAngle, FOV=45.0f, playerSpeed=2.0f, rotationSensitivity=0.05f;
+    float playerHeight=0.5f;
     std::pair<double, double> playerPosition;
     std::pair<int, int> ScreenHeightWidth;
     std::pair<double, double> playerMoveDirection = {0.0, 0.0};
@@ -33,6 +35,8 @@ private:
     std::vector<SDL_Texture*> wallTextures;
     std::vector<int> textureWidths;
     std::vector<int> textureHeights;
+    SDL_Texture* floorTexture;
+    std::pair<int, int> floorTextureHeightWidth;
 };
 
 #endif
