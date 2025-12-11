@@ -34,7 +34,6 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
         isRunning = false;
     }
 }
-
 void Game::handleEvents()
 {
     SDL_Event event;
@@ -43,21 +42,35 @@ void Game::handleEvents()
     {
         if (event.type == SDL_QUIT)
             isRunning = false;
+
+        // Hide cursor and lock on first click
+        if (event.type == SDL_MOUSEBUTTONDOWN)
+        {
+            SDL_ShowCursor(SDL_DISABLE);
+            SDL_SetRelativeMouseMode(SDL_TRUE);   // capture mouse
+        }
+
+        // Mouse movement → rotate player
+        if (event.type == SDL_MOUSEMOTION)
+        {
+            // event.motion.xrel = delta X since last frame
+            playerAngle += event.motion.xrel * mouseSensitivity;
+        }
     }
 
-    // Movement detection
+    // Keyboard movement detection
     const Uint8* keystate = SDL_GetKeyboardState(NULL);
 
     playerMoveDirection = {0.0f, 0.0f};
 
     // Forward
-    if (keystate[SDL_SCANCODE_W]) {
+    if (keystate[SDL_SCANCODE_W] || keystate[SDL_SCANCODE_UP]) {
         playerMoveDirection.first += cos(playerAngle);
         playerMoveDirection.second += sin(playerAngle);
     }
 
     // Backward
-    if (keystate[SDL_SCANCODE_S]) {
+    if (keystate[SDL_SCANCODE_S] || keystate[SDL_SCANCODE_DOWN]) {
         playerMoveDirection.first -= cos(playerAngle);
         playerMoveDirection.second -= sin(playerAngle);
     }
@@ -74,15 +87,12 @@ void Game::handleEvents()
         playerMoveDirection.second += sin(playerAngle + 3.14159f/2);
     }
 
-    // Turn Left
-    if (keystate[SDL_SCANCODE_LEFT]) {
+    // Optional keyboard turning (can keep or remove)
+    if (keystate[SDL_SCANCODE_LEFT])
         playerAngle -= rotationSensitivity;
-    }
 
-    // Turn Right
-    if (keystate[SDL_SCANCODE_RIGHT]) {
+    if (keystate[SDL_SCANCODE_RIGHT])
         playerAngle += rotationSensitivity;
-    }
 }
 
 void Game::update(float deltaTime)
@@ -115,7 +125,7 @@ void Game::render()
     SDL_SetRenderDrawColor(renderer, 135, 206, 235, 255);
     SDL_RenderClear(renderer);   
     // Draw floor
-    if (!floorTexture) {
+    if (floorTextures.size() == 0) {
         SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
         SDL_Rect floorRect = {0, ScreenHeightWidth.second / 2, ScreenHeightWidth.first, ScreenHeightWidth.second / 2};
         SDL_RenderFillRect(renderer, &floorRect);
@@ -212,7 +222,7 @@ void Game::render()
 
         // Wall Texture
         int texId = Map[mapY][mapX] - 1;
-        int imgWidth = textureWidths[texId], imgHeight = textureHeights[texId];
+        int imgWidth = wallTextureWidths[texId], imgHeight = wallTextureHeights[texId];
         SDL_QueryTexture(wallTextures[texId], NULL, NULL, &imgWidth, &imgHeight);
         int texX = (int)(wallX * imgWidth);
         if(hitSide == 0 && rayDirX > 0) texX = imgWidth - texX - 1;
@@ -224,10 +234,10 @@ void Game::render()
         SDL_RenderCopy(renderer, wallTextures[texId], &srcRect, &destRect);
 
         // Draw floor texture
-        if (floorTexture) {
+        if (floorTextures.size() > 0) {
             int floorScreenStart = drawEnd; // start drawing floor below the wall
-            imgHeight = floorTextureHeightWidth.second;
-            imgWidth = floorTextureHeightWidth.first;
+            imgHeight = floorTextureHeights[0];
+            imgWidth = floorTextureWidths[0];
             for (int y = drawEnd; y < ScreenHeightWidth.second; y++) {
                 float rowDist = playerHeight / ((float)y / ScreenHeightWidth.second - 0.5f);
 
@@ -240,15 +250,15 @@ void Game::render()
 
                 SDL_Rect srcRect  = { texX, texY, 1, 1 };
                 SDL_Rect destRect = { ray, y, 1, 1 };
-                SDL_RenderCopy(renderer, floorTexture, &srcRect, &destRect);
+                SDL_RenderCopy(renderer, floorTextures[0], &srcRect, &destRect);
             }
         }
         
         // Draw ceiling
         for(int y = 0; y < drawStart; y++) {
-            if(ceilingTexture) {
-                int imgWidth = ceilingTextureHeightWidth.first;
-                int imgHeight = ceilingTextureHeightWidth.second;
+            if(ceilingTextures.size() > 0) {
+                int imgWidth = ceilingTextureWidths[0];
+                int imgHeight = ceilingTextureHeights[0];
 
                 float rowDist = playerHeight / (0.5f - (float)y / ScreenHeightWidth.second);
 
@@ -261,7 +271,7 @@ void Game::render()
 
                 SDL_Rect srcRect  = { texX, texY, 1, 1 };
                 SDL_Rect destRect = { ray, y, 1, 1 };
-                SDL_RenderCopy(renderer, ceilingTexture, &srcRect, &destRect);
+                SDL_RenderCopy(renderer, ceilingTextures[0], &srcRect, &destRect);
             } else {
                 SDL_SetRenderDrawColor(renderer, 135, 206, 235, 255); // Sky color
                 SDL_RenderDrawPoint(renderer, ray, y);
@@ -303,28 +313,35 @@ void Game::addWallTexture(const char* filePath) {
     wallTextures.push_back(texture);
     int width, height;
     SDL_QueryTexture(texture, NULL, NULL, &width, &height);
-    textureWidths.push_back(width);
-    textureHeights.push_back(height);
+    wallTextureWidths.push_back(width);
+    wallTextureHeights.push_back(height);
 }
-void Game::loadFloorTexture(const char* filePath) {
-    floorTexture = IMG_LoadTexture(renderer, filePath);
-    if (!floorTexture) {
+void Game::addFloorTexture(const char* filePath) {
+    SDL_Texture* texture = IMG_LoadTexture(renderer, filePath);
+    if (!texture) {
         std::cerr << "Failed to load floor texture: " << filePath << " Error: " << IMG_GetError() << std::endl;
         return;
     }
+    floorTextures.push_back(texture);
     int width, height;
-    SDL_QueryTexture(floorTexture, NULL, NULL, &width, &height);
-    floorTextureHeightWidth = std::make_pair(width, height);
+    SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+    floorTextureWidths.push_back(width);
+    floorTextureHeights.push_back(height);
 }
-void Game::loadCeilingTexture(const char* filePath) {
-    ceilingTexture = IMG_LoadTexture(renderer, filePath);
-    if (!ceilingTexture) {
+void Game::addCeilingTexture(const char* filePath) {
+    SDL_Texture* texture = IMG_LoadTexture(renderer, filePath);
+    if (!texture) {
         std::cerr << "Failed to load ceiling texture: " << filePath << " Error: " << IMG_GetError() << std::endl;
         return;
     }
+    ceilingTextures.push_back(texture);
     int width, height;
-    SDL_QueryTexture(ceilingTexture, NULL, NULL, &width, &height);
-    ceilingTextureHeightWidth = std::make_pair(width, height);
+    SDL_QueryTexture(texture, NULL, NULL, &width, &height);
+    ceilingTextureWidths.push_back(width);
+    ceilingTextureHeights.push_back(height);
+}
+void Game::printPlayerPosition(){
+    std::cout << "Player Position: (" << playerPosition.first << ", " << playerPosition.second << ")\n";
 }
 void Game::clean()
 {

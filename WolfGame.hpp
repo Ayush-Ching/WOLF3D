@@ -19,27 +19,24 @@ public:
     void loadMapDataFromFile(const char* filename);
     void loadColorConfigFromFile(const char* filename);
     void placePlayerAt(int x, int y, float angle);
+    void printPlayerPosition();
     void addWallTexture(const char* filePath);
-    void loadFloorTexture(const char* filePath);
-    void loadCeilingTexture(const char* filePath);
+    void addFloorTexture(const char* filePath);
+    void addCeilingTexture(const char* filePath);
+    bool isInsideWall(float x, float y);
 private:
     bool isRunning;
     SDL_Window *window;
     SDL_Renderer *renderer;
     float playerAngle, FOV=45.0f, playerSpeed=2.0f, rotationSensitivity=0.05f;
-    float playerHeight=0.5f;
+    float playerHeight=0.5f, mouseSensitivity=0.002f;
     std::pair<double, double> playerPosition;
     std::pair<int, int> ScreenHeightWidth;
     std::pair<double, double> playerMoveDirection = {0.0, 0.0};
-    std::vector<std::vector<int>> Map;
-    std::vector<SDL_Color> colorConfig;
-    std::vector<SDL_Texture*> wallTextures;
-    std::vector<int> textureWidths;
-    std::vector<int> textureHeights;
-    SDL_Texture* floorTexture;
-    std::pair<int, int> floorTextureHeightWidth;
-    SDL_Texture* ceilingTexture;
-    std::pair<int, int> ceilingTextureHeightWidth;
+    std::vector<std::vector<int>> Map, floorMap, ceilingMap;
+    std::vector<SDL_Texture*> wallTextures, floorTextures, ceilingTextures;
+    std::vector<int> wallTextureWidths, floorTextureWidths, ceilingTextureWidths;
+    std::vector<int> wallTextureHeights, floorTextureHeights, ceilingTextureHeights;
 };
 
 #endif

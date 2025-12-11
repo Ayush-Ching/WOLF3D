@@ -5,11 +5,12 @@ Game* game = nullptr;
 int main(int argc, char* argv[]) {
     game = new Game();
     game->init("My Game", 100, 100, 800, 600, false);
-    game->placePlayerAt(3, 3, 0.0f);
+    game->placePlayerAt(5, 5, 0.0f);
     game->loadMapDataFromFile("map.txt");
-    game->addWallTexture("Textures/zzwolf11.png");
-    game->loadFloorTexture("Textures/floor0_5.png");
-    game->loadCeilingTexture("Textures/compblue.png");
+    for(int i=0; i<10; i++)
+        game->addWallTexture("Textures/zzwolf11.png");
+    game->addFloorTexture("Textures/floor0_5.png");
+    game->addCeilingTexture("Textures/compblue.png");
     const int FPS = 60;
     const float frameDelay = 1000.0f / FPS;
 
