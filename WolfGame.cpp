@@ -2,16 +2,26 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <sstream>
 Game::Game(){
 
 }
 
 Game::~Game(){
-    
+    for (auto& [pos, d] : doors)
+        delete d;
+
+    for (Enemy* e : enemies)
+        delete e;
 }
+
 
 void Game::init(const char *title, int xpos, int ypos, int width, int height, bool fullscreen)
 {
+
+    for(Enemy* e: enemies){
+        e->init();
+    }
     if(SDL_Init(SDL_INIT_EVERYTHING) == 0){
         int flags = 0;
         if (!(IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG) & (IMG_INIT_PNG | IMG_INIT_JPG))) {
@@ -104,13 +114,13 @@ void Game::handleEvents()
 
         auto key = std::make_pair(ty, tx);
         if (doors.count(key)) {
-            Door &d = doors[key];
+            Door* d = doors[key];
 
-            if (d.locked && !playerHasKey(d.keyType))
+            if (d->locked && !playerHasKey(d->keyType))
                 return;
 
-            if (d.openAmount == 0.0f)
-                d.opening = true;
+            if (d->openAmount == 0.0f)
+                d->opening = true;
         }
     }
 
@@ -133,28 +143,31 @@ void Game::update(float deltaTime)
     float newY = playerPosition.second + playerMoveDirection.second * playerSpeed * deltaTime;
     int tileX = Map[(int)playerPosition.second][(int)(newX + playerSquareSize * (newX>playerPosition.first?1:-1))];
     int tileY = Map[(int)(newY + playerSquareSize * (newY>playerPosition.second?1:-1))][(int)playerPosition.first];
-    if (tileX == 0 || (isDoor(tileX) && doors[{(int)playerPosition.second, (int)(newX + playerSquareSize * (newX>playerPosition.first?1:-1))}].openAmount > 0.5f))
+    if (tileX == 0 || (isDoor(tileX) && doors[{(int)playerPosition.second, (int)(newX + playerSquareSize * (newX>playerPosition.first?1:-1))}]->openAmount > 0.5f))
         playerPosition.first = newX;
 
-    if (tileY == 0 || (isDoor(tileY) && doors[{(int)(newY + playerSquareSize * (newY>playerPosition.second?1:-1)), (int)playerPosition.first}].openAmount > 0.5f))
+    if (tileY == 0 || (isDoor(tileY) && doors[{(int)(newY + playerSquareSize * (newY>playerPosition.second?1:-1)), (int)playerPosition.first}]->openAmount > 0.5f))
         playerPosition.second = newY;
 
     // Update doors
     for (auto &p : doors)
     {
-        Door &d = p.second;
+        Door* d = p.second;
 
-        if (d.opening) {
-            d.openAmount += 1.5f * deltaTime;
-            if (d.openAmount >= 1.0f) {
-                d.openAmount = 1.0f;
-                d.opening = false;
+        if (d->opening) {
+            d->openAmount += 1.5f * deltaTime;
+            if (d->openAmount >= 1.0f) {
+                d->openAmount = 1.0f;
+                d->opening = false;
             }
         }
-
-
     }
 
+    // Update enemies
+    for(Enemy* e: enemies){
+        e->_process(deltaTime);
+        e->updateDirnNumWrt(playerPosition);
+    }
 }
 
 void Game::render()
@@ -235,7 +248,7 @@ void Game::render()
             }
             else if (isDoor(Map[mapY][mapX]))
             {
-                float open = doors[{mapY, mapX}].openAmount;  // 0..1
+                float open = doors[{mapY, mapX}]->openAmount;  // 0..1
 
                 // --- compute hit distance ---
                 float hitDist = (hitSide == 0 ? sideDistX - deltaDistX
@@ -317,9 +330,9 @@ void Game::render()
             SDL_Rect destRect = { ray, drawStart, 1, drawEnd - drawStart };
             SDL_RenderCopy(renderer, wallTextures[texId], &srcRect, &destRect);
         }
-        else if (wallX > doors[{mapY, mapX}].openAmount) {
+        else if (wallX > doors[{mapY, mapX}]->openAmount) {
 
-            wallX -= doors[{mapY, mapX}].openAmount;
+            wallX -= doors[{mapY, mapX}]->openAmount;
             int texX = (int)(wallX * imgWidth);
             if(hitSide == 0 && rayDirX > 0) texX = imgWidth - texX - 1;
             if(hitSide == 1 && rayDirY < 0) texX = imgWidth - texX - 1;
@@ -375,10 +388,10 @@ void Game::render()
     // ================= ENEMY RENDERING (SPRITES) =================
     // Enemies are rendered as billboard sprites (NOT raycasted)
     // SORT the enemies list before here (TBD)
-    for (Enemy& enemy : enemies)
+    for (Enemy* enemy : enemies)
     {
         // ---- 1. Enemy position relative to player ----
-        auto [ex, ey] = enemy.get_position();
+        auto [ex, ey] = enemy->get_position();
 
         float dx = ex - playerPosition.first;
         float dy = ey - playerPosition.second;
@@ -393,9 +406,10 @@ void Game::render()
         while (enemyAngle < -PI) enemyAngle += 2 * PI;
 
         // ---- 3. Check if enemy is inside FOV ----
-        if (fabs(enemyAngle) > halfFov)
+        if (fabs(enemyAngle) > halfFov){
+            //std::cout<<"enemy out of FOV\n";
             continue; 
-        
+        }
         // ---- 4. Project enemy into screen space ----
         int screenX = (int)(
             (enemyAngle + halfFov) / fovRad * ScreenHeightWidth.first
@@ -417,11 +431,12 @@ void Game::render()
 
         // ---- 6. Select enemy texture (TEMP: first texture) ----
         // Later you’ll switch based on state + direction
-        if (enemyTextures.empty())
+        if (enemyTextures.empty()){
+            //std::cout<<"0 elements in enemyTextures\n";
             continue;
-
-        SDL_Texture* tex = IMG_LoadTexture(renderer,
-            enemyTextures.begin()->second.c_str());
+        }
+        
+        SDL_Texture* tex = enemyTextures[{enemy->get_current_frame(),enemy->get_dirn_num()}];
         int texW, texH;
         SDL_QueryTexture(tex, nullptr, nullptr, &texW, &texH);
 
@@ -450,7 +465,6 @@ void Game::render()
             SDL_RenderCopy(renderer, tex, &srcRect, &dstRect);
         }
 
-        SDL_DestroyTexture(tex); // TEMP (optimize later)
     }
     // ============================================================
 
@@ -471,13 +485,13 @@ void Game::loadMapDataFromFile(const char* filename)
         for (char& ch : line) {
             if (ch >= '6' && ch <= '9') {
                 int t = ch - '0';
-                Door d;
-                d.openAmount = 0.0f;
-                d.opening = false;
-                if (t == 6) { d.locked = false; d.keyType = 0; }
-                if (t == 7) { d.locked = true;  d.keyType = 1; }  // blue key
-                if (t == 8) { d.locked = true;  d.keyType = 2; }  // red key
-                if (t == 9) { d.locked = true;  d.keyType = 3; }  // gold key
+                Door* d = new Door();
+                d->openAmount = 0.0f;
+                d->opening = false;
+                if (t == 6) { d->locked = false; d->keyType = 0; }
+                if (t == 7) { d->locked = true;  d->keyType = 1; }  // blue key
+                if (t == 8) { d->locked = true;  d->keyType = 2; }  // red key
+                if (t == 9) { d->locked = true;  d->keyType = 3; }  // gold key
                 
                 doors[{Map.size(), row.size()}] = d;
             }
@@ -536,8 +550,8 @@ bool Game::isDoor(int tile) {
 }
 bool Game::playerHasKey(int keyType) {
     if(keyType == 0) return true; // no key needed
-    for (const Door& key : keysHeld) {
-        if (key.keyType == keyType) {
+    for (const Door* key : keysHeld) {
+        if (key->keyType == keyType) {
             return true;
         }
     }
@@ -604,17 +618,53 @@ void Game::loadAllTextures(const char* filePath)
 }
 void Game::clean()
 {
+    for (auto& [k, tex] : enemyTextures)
+        SDL_DestroyTexture(tex);
+    enemyTextures.clear();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();
 }
 
-void Game::loadEnemyTextures(const char* filePath){
-    load_enemy_textures(filePath, enemyTextures);
+void Game::loadEnemyTextures(const char* filePath)
+{
+    std::ifstream file(filePath);
+    if (!file.is_open()) {
+        std::cerr << "Failed to open file: " << filePath << "\n";
+        return;
+    }
+
+    std::string line;
+
+    while (std::getline(file, line)) {
+
+        // Remove UTF-8 BOM if present (important for first line)
+        if (!line.empty() && static_cast<unsigned char>(line[0]) == 0xEF)
+            line.erase(0, 3);
+
+        // Remove comments
+        auto comment_pos = line.find('#');
+        if (comment_pos != std::string::npos)
+            line = line.substr(0, comment_pos);
+
+        std::istringstream iss(line);
+
+        int a, b;
+        std::string path;
+
+        // Expect: <int> <int> <string>
+        if (iss >> a >> b >> path) {
+            SDL_Texture* texture = IMG_LoadTexture(renderer, path.c_str());
+            if (!texture) {
+                std::cerr << "Failed to load texture: " << filePath << " Error: " << IMG_GetError() << std::endl;
+                return;
+            }
+            enemyTextures[{a, b}] = texture;
+        }
+        // else: silently ignore malformed / empty lines
+    }
 }
 
 void Game::addEnemy(float x, float y, float angle) {
-    // Create enemy
-    Enemy enemy(x, y, angle);
-    enemies.push_back(enemy);
+    enemies.push_back(new Enemy(x, y, angle));
 }

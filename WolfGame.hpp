@@ -36,7 +36,7 @@ private:
     float playerAngle, FOV=45.0f, playerSpeed=2.0f, rotationSensitivity=0.05f;
     float playerHeight=0.5f, mouseSensitivity=0.002f;
     float playerSquareSize=1.0f;
-    std::pair<double, double> playerPosition;
+    std::pair<float, float> playerPosition;
     std::pair<int, int> ScreenHeightWidth;
     std::pair<double, double> playerMoveDirection = {0.0, 0.0};
     std::vector<std::vector<int>> Map, floorMap, ceilingMap;
@@ -50,10 +50,10 @@ private:
         int keyType;        // 0 = none, 1 = blue, 2 = red, 3 = gold
     };
 
-    std::map<std::pair<int,int>, Door> doors;  // key: (mapX,mapY)
-    std::vector<Door> keysHeld; // keys the player has collected
-    std::vector<Enemy> enemies;
-    std::map<std::pair<int, int>, std::string> enemyTextures;
+    std::map<std::pair<int,int>, Door*> doors;  // key: (mapX,mapY)
+    std::vector<Door*> keysHeld; // keys the player has collected
+    std::vector<Enemy*> enemies;
+    std::map<std::pair<int, int>, SDL_Texture*> enemyTextures;
 };
 
 #endif
