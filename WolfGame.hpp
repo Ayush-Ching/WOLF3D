@@ -7,6 +7,15 @@
 #include <vector>
 #include <utility>
 #include <map>
+using SDLWindowPtr =
+    std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)>;
+
+using SDLRendererPtr =
+    std::unique_ptr<SDL_Renderer, decltype(&SDL_DestroyRenderer)>;
+
+using SDLTexturePtr =
+    std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>;
+
 class Game{
 public:
     Game();
@@ -32,8 +41,8 @@ public:
     bool collidesWithEnemy(float x, float y);
 private:
     bool isRunning;
-    SDL_Window *window;
-    SDL_Renderer *renderer;
+    SDLWindowPtr   window   {nullptr, SDL_DestroyWindow};
+    SDLRendererPtr renderer {nullptr, SDL_DestroyRenderer};
     float playerAngle, FOV=45.0f, playerSpeed=2.0f, rotationSensitivity=0.05f;
     float playerHeight=0.5f, mouseSensitivity=0.002f;
     float playerSquareSize=1.0f;
@@ -41,7 +50,9 @@ private:
     std::pair<int, int> ScreenHeightWidth;
     std::pair<double, double> playerMoveDirection = {0.0, 0.0};
     std::vector<std::vector<int>> Map, floorMap, ceilingMap;
-    std::vector<SDL_Texture*> wallTextures, floorTextures, ceilingTextures;
+    std::vector<SDLTexturePtr> wallTextures;
+    std::vector<SDLTexturePtr> floorTextures;
+    std::vector<SDLTexturePtr> ceilingTextures;
     std::vector<int> wallTextureWidths, floorTextureWidths, ceilingTextureWidths;
     std::vector<int> wallTextureHeights, floorTextureHeights, ceilingTextureHeights;
     struct Door {
@@ -51,10 +62,10 @@ private:
         int keyType;        // 0 = none, 1 = blue, 2 = red, 3 = gold
     };
 
-    std::map<std::pair<int,int>, Door*> doors;  // key: (mapX,mapY)
-    std::vector<Door*> keysHeld; // keys the player has collected
-    std::vector<Enemy*> enemies;
-    std::map<std::pair<int, int>, SDL_Texture*> enemyTextures;
+    std::map<std::pair<int,int>, Door> doors;  // key: (mapX,mapY)
+    std::vector<int> keysHeld; // keys the player has collected
+    std::vector<std::unique_ptr<Enemy>> enemies;
+    std::map<std::pair<int, int>, SDLTexturePtr> enemyTextures;
 
     int health = 100;
 
