@@ -143,11 +143,27 @@ void Game::update(float deltaTime)
     float newY = playerPosition.second + playerMoveDirection.second * playerSpeed * deltaTime;
     int tileX = Map[(int)playerPosition.second][(int)(newX + playerSquareSize * (newX>playerPosition.first?1:-1))];
     int tileY = Map[(int)(newY + playerSquareSize * (newY>playerPosition.second?1:-1))][(int)playerPosition.first];
-    if (tileX == 0 || (isDoor(tileX) && doors[{(int)playerPosition.second, (int)(newX + playerSquareSize * (newX>playerPosition.first?1:-1))}]->openAmount > 0.5f))
-        playerPosition.first = newX;
+    if (tileX == 0 ||
+        (isDoor(tileX) &&
+        doors[{(int)playerPosition.second,
+                (int)(newX + playerSquareSize * (newX > playerPosition.first ? 1 : -1))}]
+            ->openAmount > 0.5f))
+    {
+        if (!collidesWithEnemy(newX, playerPosition.second)) {
+            playerPosition.first = newX;
+        }
+    }
 
-    if (tileY == 0 || (isDoor(tileY) && doors[{(int)(newY + playerSquareSize * (newY>playerPosition.second?1:-1)), (int)playerPosition.first}]->openAmount > 0.5f))
-        playerPosition.second = newY;
+    if (tileY == 0 ||
+        (isDoor(tileY) &&
+        doors[{(int)(newY + playerSquareSize * (newY > playerPosition.second ? 1 : -1)),
+                (int)playerPosition.first}]
+            ->openAmount > 0.5f))
+    {
+        if (!collidesWithEnemy(playerPosition.first, newY)) {
+            playerPosition.second = newY;
+        }
+    }
 
     // Update doors
     for (auto &p : doors)
@@ -667,4 +683,28 @@ void Game::loadEnemyTextures(const char* filePath)
 
 void Game::addEnemy(float x, float y, float angle) {
     enemies.push_back(new Enemy(x, y, angle));
+}
+
+bool aabbIntersect(
+    float ax, float ay, float aw, float ah,
+    float bx, float by, float bw, float bh
+) {
+    return ax < bx + bw &&
+           ax + aw > bx &&
+           ay < by + bh &&
+           ay + ah > by;
+}
+
+bool Game::collidesWithEnemy(float x, float y) {
+    for (Enemy* e : enemies) {
+        if (aabbIntersect(
+            x, y,
+            playerSquareSize, playerSquareSize,
+            e->get_position().first, e->get_position().second,
+            e->get_size(), e->get_size()
+        )) {
+            return true;
+        }
+    }
+    return false;
 }

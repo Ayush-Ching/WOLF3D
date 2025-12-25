@@ -109,3 +109,7 @@ void Enemy::moveNextFrame(){
         std::cout<<"Animation has no frames\n";
     currentFrame = Animations[state][(currentFrame+1)%Animations[state].size()];
 }
+
+float Enemy::get_size(){
+    return sze;
+}

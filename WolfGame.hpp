@@ -29,6 +29,7 @@ public:
     void loadAllTextures(const char* filePath);
     void addEnemy(float x, float y, float angle);
     void loadEnemyTextures(const char* filePath);
+    bool collidesWithEnemy(float x, float y);
 private:
     bool isRunning;
     SDL_Window *window;

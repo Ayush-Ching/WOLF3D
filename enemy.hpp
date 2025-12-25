@@ -20,7 +20,7 @@ void load_enemy_textures(
 class Enemy {
     EnemyState state;
     std::pair<float, float> position;
-    float angle;
+    float angle, sze=1.0f;
     float DurationPerSprite = 1.0f;
     float fracTime = 0.0f;
     int currentFrame = 0;
@@ -29,6 +29,7 @@ class Enemy {
 public:
     Enemy(float x, float y, float theta);
     std::pair<float, float> get_position();
+    float get_size();
     float get_angle();
     void _process(float deltaTime);
     void addFrame(EnemyState s, int frame);
