@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cmath>
 #include <utility>
+#include <cstdlib>
 
 static float normalizeAngle(float a) {
     while (a <= -M_PI) a += 2.0f * M_PI;
@@ -17,20 +18,6 @@ static std::string to_lower(std::string s) {
     return s;
 }
 
-bool parse_enemy_state(const std::string& name, EnemyState& out) {
-    std::string n = to_lower(name);
-
-    if (n == "enemy_idle" || n == "idle") {
-        out = ENEMY_IDLE;
-        return true;
-    }
-    if (n == "enemy_walk" || n == "walk") {
-        out = ENEMY_WALK;
-        return true;
-    }
-    return false;
-}
-
 Enemy::Enemy(float x, float y, float theta)
     : position(x, y), angle(theta) {}
 
@@ -42,12 +29,33 @@ float Enemy::get_angle(){
     return angle;
 }
 
-void Enemy::_process(float deltaTime) {
+void Enemy::_process(float deltaTime, std::pair<float, float> playerPosition) {
+    if (!stateLocked)
+        thinkTimer += deltaTime;
+
+    if(thinkTimer > thinkInterval){
+        thinkTimer = 0.0f;
+        think(playerPosition);
+    }
+
     if(state != ENEMY_IDLE){
         fracTime += deltaTime;
         while (fracTime > DurationPerSprite) {
             moveNextFrame();
             fracTime -= DurationPerSprite;
+            if(frameIndex == Animations[state].size()-1){
+                if(state==ENEMY_DEAD){
+                    isDead = true;
+                    stateLocked = true;
+                    return;
+                }
+                if(!walking){   // Pain or shooting end
+                    stateLocked = false;
+                    thinkTimer = 0.0f;
+                    setAnimState(ENEMY_IDLE, false);
+                    fracTime = 0.0f;
+                }
+            }
         }
     }
     else{
@@ -65,7 +73,8 @@ void Enemy::_process(float deltaTime) {
         if (distSq <= step*step) {
             position = destinationOfWalk;
             walking = false;
-            setAnimState(ENEMY_IDLE);
+            setAnimState(ENEMY_IDLE, false);
+            stateLocked = false;
         } else {
             position.first  += step * std::cos(angle);
             position.second -= step * std::sin(angle);
@@ -81,17 +90,25 @@ void Enemy::addFrames(const std::map<EnemyState, std::vector<int>>& Anim) {
     Animations = Anim;
 }
 
-void Enemy::setAnimState(EnemyState s){
+void Enemy::setAnimState(EnemyState s, bool lock = false){
+    if (state == s) return;
+
     state = s;
+    stateLocked = lock;
+    frameIndex = 0;
+    currentFrame = Animations[state][0];
+    fracTime = 0.0f;
 }
 
 void Enemy::init(){
     addFrames({
         {ENEMY_IDLE, {0}},
         {ENEMY_WALK, {1, 2, 3, 4}},
+        {ENEMY_SHOOT, {5, 6, 7}},
+        {ENEMY_PAIN, {8, 9}},
+        {ENEMY_DEAD, {10, 11, 12, 13}}
 });
-    state = ENEMY_IDLE;
-    walkTo(20.0f, 5.0f);
+    setAnimState(ENEMY_IDLE, false);
 }
 
 void Enemy::updateDirnNumWrt(std::pair<float, float> pos) {
@@ -140,11 +157,96 @@ float Enemy::get_size(){
     return sze;
 }
 
-void Enemy::walkTo(float x, float y){
+void Enemy::walkTo(float x, float y){ // for testing purposes
     destinationOfWalk = std::make_pair(x, y);
-    float dx = x  - position.first;
+
+    float dx = x - position.first;
     float dy = y - position.second;
-    angle = std::atan2(-dy, dx);
+
+    float baseAngle = std::atan2(-dy, dx);
+
+    angle = baseAngle ;
+
     setAnimState(ENEMY_WALK);
     walking = true;
+}
+
+void Enemy::think(std::pair<float, float> playerPosition){
+    if(stateLocked)
+        return;
+    if(health <= 0 && !isDead){
+        setAnimState(ENEMY_DEAD, true);
+        return;
+    }
+    if(justTookDamage && canEnterPain()){
+        setAnimState(ENEMY_PAIN, true);
+        justTookDamage = false;
+        return;
+    }
+    if(canSeePlayer && inAttackRange && randomAttackChance()){
+        setAnimState(ENEMY_SHOOT, true);
+        // Randomness to decide hit/miss and apply damage to player
+        return;
+    }
+    if(canSeePlayer || alerted){
+        if(!walking){
+            // Vector to target
+            float dx = playerPosition.first - position.first;
+            float dy = playerPosition.second - position.second;
+            float dist = std::hypot(dx, dy);
+
+            if (dist < 1.0f)
+                return;
+
+            // Normalize
+            float nx = dx / dist;
+            float ny = dy / dist;
+
+            // Random angular error
+            float r = static_cast<float>(rand()) / RAND_MAX; // [0,1]
+            float error = (r * 2.0f - 1.0f) * walk_angle_error;
+
+            float baseAngle = std::atan2(-ny, nx);
+            float finalAngle = baseAngle + error;
+
+            // Choose how far to walk this segment
+            float walkDist = std::min(dist, walk_segment_length); 
+            
+            // Compute deviated destination
+            destinationOfWalk.first  = position.first  + walkDist * std::cos(finalAngle);
+            destinationOfWalk.second = position.second - walkDist * std::sin(finalAngle);
+
+            angle = std::atan2(
+                -(destinationOfWalk.second - position.second),
+                (destinationOfWalk.first  - position.first)
+            );
+
+            setAnimState(ENEMY_WALK, true);
+            walking = true;
+        }
+        return;
+    }
+    else{
+        setAnimState(ENEMY_IDLE, false);
+    }
+}
+
+
+void Enemy::updateCanSeePlayer(bool x){
+    canSeePlayer = x;
+}
+void Enemy::takeDamage(){
+    justTookDamage = true;
+}
+
+bool Enemy::canEnterPain(){
+    if(rand() % painChanceDivisor == 0)
+        return true;
+    return false;
+}
+
+bool Enemy::randomAttackChance(){
+    if(rand() % attackChanceDivisor == 0)
+        return true;
+    return false;
 }

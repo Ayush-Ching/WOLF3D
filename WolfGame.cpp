@@ -181,8 +181,9 @@ void Game::update(float deltaTime)
 
     // Update enemies
     for(const std::unique_ptr<Enemy>& e : enemies){
-        e->_process(deltaTime);
+        e->_process(deltaTime, playerPosition);
         e->updateDirnNumWrt(playerPosition);
+        // Update canSeePlayer
     }
 }
 
@@ -730,7 +731,7 @@ void Game::loadEnemyTextures(const char* filePath)
         }
         // else: silently ignore malformed / empty lines
     }
-    std::cout<<enemyTextures.size()<<std::endl;
+    //std::cout<<enemyTextures.size()<<std::endl;
 }
 
 void Game::addEnemy(float x, float y, float angle) {
@@ -761,3 +762,9 @@ bool Game::collidesWithEnemy(float x, float y) {
     }
     return false;
 }
+
+/*
+TODO:
+UPDATE CANSEEPLAYER, INATTACKRANGE, ALERTED
+APPLY DAMAGES TO PLAYER AND ENEMIES
+*/
