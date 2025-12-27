@@ -209,6 +209,8 @@ void Game::update(float deltaTime)
         if(x && dmg > 0){
             health -= dmg;
             if(health < 0) health = 0;
+
+    //std::cout << "Player Health: " << health << std::endl;
         }
     }
     if(hasShot){
@@ -218,7 +220,6 @@ void Game::update(float deltaTime)
             shotThisFrame = false;
         }
     }
-    //std::cout << "Player Health: " << health << std::endl;
 }
 
 void Game::render()
@@ -554,7 +555,7 @@ void Game::render()
         int dmg=0;
         if(canShootEnemy(dist))
             dmg = (rand() & 31) * weaponMultiplier;
-        std::cout << "Enemy at index " << enemyShotIndex << " shot for " << dmg << " damage.\n";
+        //std::cout << "Enemy at index " << enemyShotIndex << " shot for " << dmg << " damage.\n";
         if (rayCastEnemyToPlayer(*enemies[enemyShotIndex]))
             enemies[enemyShotIndex]->takeDamage(dmg); 
         shotThisFrame = false;

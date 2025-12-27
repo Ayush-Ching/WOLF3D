@@ -253,7 +253,7 @@ void Enemy::updateCanSeePlayer(bool x){
 void Enemy::takeDamage(int dmg){
     justTookDamage = true;
     health -= dmg;
-    //std::cout << "Enemy took " << dmg << " damage, health now " << health << std::endl;
+    std::cout << "Enemy took " << dmg << " damage, health now " << health << std::endl;
     if(health < 0) health = 0;
 }
 

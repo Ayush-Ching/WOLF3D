@@ -71,7 +71,7 @@ private:
     int health = 100;
 
     // weapon (current)
-    int weaponMultiplier = 1;
+    int weaponMultiplier = 2; // 1 = bare hands, 2 = pistol, 3 = rifle
     int accuracyDivisor = 4; // 75% hit
     float fireCooldown = 0.0f;
     float fireDuration = 0.2f;
