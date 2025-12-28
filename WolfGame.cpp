@@ -50,6 +50,7 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
     for(const std::unique_ptr<Enemy>& e : enemies){
         e->init();
     }
+    AudioManager::init();
 }
 void Game::handleEvents()
 {
@@ -70,6 +71,7 @@ void Game::handleEvents()
                 shotThisFrame = true;
                 hasShot = true;
                 fireCooldown = 0.0f;
+                AudioManager::playSFX(weapons[currentWeaponIndex].soundName, MIX_MAX_VOLUME);
             }
             else{
             //    std::cout << "Weapon still cooling down\n";
@@ -200,7 +202,7 @@ void Game::update(float deltaTime)
 
     // Update enemies
     for(const std::unique_ptr<Enemy>& e : enemies){
-        e->_process(deltaTime, playerPosition);
+        e->_process(deltaTime, playerPosition, playerAngle);
 
         // Update canSeePlayer
         bool x = rayCastEnemyToPlayer(*e);
@@ -212,10 +214,10 @@ void Game::update(float deltaTime)
             if(health < 0) health = 0;
 
         // Update Alerts
-        if(shotThisFrame && weaponMultiplier > 1 && !e->isAlerted()){
+        if(shotThisFrame && weapons[currentWeaponIndex].multiplier > 1 && !e->isAlerted()){
             float dist = distSq(playerPosition, e->get_position());
             dist = pow(dist, 0.5f);
-            if(dist <= alertRange)
+            if(dist <= weapons[currentWeaponIndex].alertRadius)
                 e->alert();
         }
     //std::cout << "Player Health: " << health << std::endl;
@@ -223,7 +225,7 @@ void Game::update(float deltaTime)
     }
     if(hasShot){
         fireCooldown += deltaTime;
-        if(fireCooldown >= fireDuration){
+        if(fireCooldown >= weapons[currentWeaponIndex].coolDownTime){
             hasShot = false;
             shotThisFrame = false;
         }
@@ -504,7 +506,7 @@ void Game::render()
         if(shotThisFrame &&
            screenX >= screenCentreX - spriteWidth / 2 &&
            screenX <= screenCentreX + spriteWidth / 2 &&
-           enemyDist < 5.0f) 
+           enemyDist < weapons[currentWeaponIndex].range) 
         {
             enemyShotIndex = currentIndex;
         }
@@ -562,10 +564,17 @@ void Game::render()
         dist = pow(dist, 0.5f); // sqrt
         int dmg=0;
         if(canShootEnemy(dist))
-            dmg = (rand() & 31) * weaponMultiplier;
+            dmg = (rand() & 31) * weapons[currentWeaponIndex].multiplier;
         //std::cout << "Enemy at index " << enemyShotIndex << " shot for " << dmg << " damage.\n";
-        if (rayCastEnemyToPlayer(*enemies[enemyShotIndex]))
+        if (rayCastEnemyToPlayer(*enemies[enemyShotIndex])){
             enemies[enemyShotIndex]->takeDamage(dmg); 
+            float relativeAngle = atan2(
+                enemies[enemyShotIndex]->get_position().second - playerPosition.second,
+                enemies[enemyShotIndex]->get_position().first  - playerPosition.first
+            ) - playerAngle;
+            while (relativeAngle > PI)  relativeAngle -= 2 * PI;
+            while (relativeAngle < -PI) relativeAngle += 2 * PI;
+        }
         shotThisFrame = false;
     }
     else if (shotThisFrame) {
@@ -916,7 +925,7 @@ bool Game::canShootEnemy(float dist){
     float t = (dist - MIN_DIST) / (MAX_DIST - MIN_DIST);
 
     // Quadratic falloff (feels very Wolf-like)
-    int errorDivisor = ((int) (accuracyDivisor - 1) * (1.0f - t * t)) + 1;
+    int errorDivisor = ((int) (weapons[currentWeaponIndex].accuracy - 1) * (1.0f - t * t)) + 1;
     return (rand() % errorDivisor) != 0;
 }
 
@@ -950,4 +959,4 @@ void Game::loadEnemies(const char* filePath)
 
     file.close();
 }
-// Alert system yet to be implemented
+// Add all sounds

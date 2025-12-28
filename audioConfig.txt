@@ -1,0 +1,13 @@
+[Music]
+[SFx]
+enemy_die1 : Sounds/Death1.wav
+enemy_die2 : Sounds/Death2.wav
+enemy_pain : Sounds/EnemyPain.wav
+enemy_shoot : Sounds/MachineGun.wav
+knife : Sounds/Knife.wav
+rifle : Sounds/MachineGun.wav
+pistol : Sounds/Pistol.wav
+die : Sounds/PlayerDies.wav
+pain1 : Sounds/PlayerPain1.wav
+pain2 : Sounds/PlayerPain2.wav
+key : Sounds/Pickup.wav

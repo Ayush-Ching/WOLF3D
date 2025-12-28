@@ -4,8 +4,9 @@ Game* game = nullptr;
 
 int main(int argc, char* argv[]) {
     game = new Game();
-    game->addEnemy(5.0f,5.0f,0.0f);
+    game->loadEnemies("enemies.txt");
     game->init("My Game", 100, 100, 800, 600, false);
+    AudioManager::loadAllAudios("audioConfig.txt");
     game->placePlayerAt(2, 2, 0.0f);
     game->loadMapDataFromFile("testMap.txt");
     game->loadAllTextures("textureMapping.txt");

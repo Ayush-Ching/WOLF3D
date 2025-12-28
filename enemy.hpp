@@ -53,7 +53,7 @@ public:
     std::pair<float, float> get_position() const;
     float get_size() const;
     float get_angle() const;
-    void _process(float deltaTime, const std::pair<float, float>& pos);
+    void _process(float deltaTime, const std::pair<float, float>& pos, float playerAngle);
     void addFrame(EnemyState s, int frame);
     void addFrames(const std::map<EnemyState, std::vector<int>>& Anim);
     void setAnimState(EnemyState s, bool );
@@ -66,7 +66,7 @@ public:
     void alert();
     bool canEnterPain();
     bool randomAttackChance(int);
-    void think(const std::pair<float, float>& pos);
+    void think(const std::pair<float, float>& pos, float playerAngle);
     void updateCanSeePlayer(bool);
     void takeDamage(int);
     int computeEnemyHitChance(float dist);

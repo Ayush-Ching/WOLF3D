@@ -1,4 +1,5 @@
 #include "enemy.hpp"
+#include "AudioManager.hpp"
 #include <iostream>
 #include <algorithm>
 #include <cctype>
@@ -29,7 +30,7 @@ float Enemy::get_angle() const{
     return angle;
 }
 
-void Enemy::_process(float deltaTime, const std::pair<float, float>& playerPosition) {
+void Enemy::_process(float deltaTime, const std::pair<float, float>& playerPosition, float playerAngle) {
     if(isDead) return;
     updateDirnNumWrt(playerPosition);
     if (!stateLocked)
@@ -37,7 +38,7 @@ void Enemy::_process(float deltaTime, const std::pair<float, float>& playerPosit
     
     if(thinkTimer > thinkInterval){
         thinkTimer = 0.0f;
-        think(playerPosition);
+        think(playerPosition, playerAngle);
     }
 
     if(state != ENEMY_IDLE){
@@ -176,16 +177,37 @@ void Enemy::walkTo(float x, float y){ // for testing purposes
     walking = true;
 }
 
-void Enemy::think(const std::pair<float, float>& playerPosition){
+void Enemy::think(const std::pair<float, float>& playerPosition, float playerAngle){
     if(stateLocked)
         return;
     if(health <= 0 && !isDead){
         setAnimState(ENEMY_DEAD, true);
+        AudioManager::playSpatialSFX(
+            rand() % 2 == 0 ? "enemy_die1" : "enemy_die2", 
+            std::hypot(
+                playerPosition.first  - position.first,
+                playerPosition.second - position.second
+            ),
+            atan2(
+                position.second - playerPosition.second,
+                position.first  - playerPosition.first
+            ) - playerAngle
+        );
         return;
     }
     if(justTookDamage && canEnterPain()){
         setAnimState(ENEMY_PAIN, true);
         justTookDamage = false;
+        AudioManager::playSpatialSFX("enemy_pain", 
+            std::hypot(
+                playerPosition.first  - position.first,
+                playerPosition.second - position.second
+            ),
+            atan2(
+                position.second - playerPosition.second,
+                position.first  - playerPosition.first
+            ) - playerAngle
+        );
         return;
     }
     else if(justTookDamage){
@@ -201,7 +223,13 @@ void Enemy::think(const std::pair<float, float>& playerPosition){
     int chanceDivisor = computeEnemyHitChance(dist);
     if(canSeePlayer && inAttackRange && randomAttackChance(chanceDivisor)){
         setAnimState(ENEMY_SHOOT, true);
-        // Randomness to decide hit/miss and apply damage to player
+        AudioManager::playSpatialSFX("enemy_shoot", 
+            dist,
+            atan2(
+                position.second - playerPosition.second,
+                position.first  - playerPosition.first
+            ) - playerAngle
+        );
         return;
     }
     if(canSeePlayer || alerted){

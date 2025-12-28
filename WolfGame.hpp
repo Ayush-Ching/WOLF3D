@@ -7,6 +7,7 @@
 #include <vector>
 #include <utility>
 #include <map>
+#include "AudioManager.hpp"
 using SDLWindowPtr =
     std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)>;
 
@@ -72,14 +73,23 @@ private:
     int health = 100;
 
     // weapon (current)
-    int weaponMultiplier = 2; // 1 = bare hands, 2 = pistol, 3 = rifle
-    int accuracyDivisor = 4; // 75% hit
-    float fireCooldown = 0.0f;
-    float fireDuration = 0.2f;
+    struct weapon {
+        int multiplier; // damage multiplier
+        int accuracy;   // higher is better (1=never hit, 2=50%, 3=66%, etc)
+        float range; // >90 for infinite (map size)
+        float coolDownTime;
+        float alertRadius;
+        std::string soundName;
+    };
+    std::vector<weapon> weapons = {
+        {1, 100, 2.0f, 0.0f, 8.0f, "knife"},   // knife
+        {2, 4, 70.0f, 0.2f, 16.0f, "pistol"},  // pistol
+        {3, 6, 90.0f, 0.5f, 24.0f, "rifle"}   // rifle
+    };
+    int currentWeaponIndex = 1;
+    float fireCooldown = 0.2f;
     bool shotThisFrame = false, hasShot = false;
-    float alertRange = 16.0f;
     bool rayCastEnemyToPlayer(const Enemy& enemy);
-
 };
 
 #endif
