@@ -14,8 +14,17 @@ using SDLWindowPtr =
 using SDLRendererPtr =
     std::unique_ptr<SDL_Renderer, decltype(&SDL_DestroyRenderer)>;
 
-using SDLTexturePtr =
-    std::unique_ptr<SDL_Texture, decltype(&SDL_DestroyTexture)>;
+using SDLTexturePtr = std::shared_ptr<SDL_Texture>;
+
+struct Sprite {
+    int spriteID;
+    std::pair<float, float> position;
+    SDLTexturePtr texture;
+    int textureWidth;
+    int textureHeight;
+    bool isEnemy = false;
+    bool active = true;
+};
 
 class Game{
 public:
@@ -74,7 +83,9 @@ private:
     std::vector<int> keysHeld; // keys the player has collected
     std::vector<std::unique_ptr<Enemy>> enemies;
     std::map<std::pair<int, int>, SDLTexturePtr> enemyTextures;
-
+    std::map<int, int> enemySpriteIDToindex;
+    int enemyTextureWidth = 64;
+    int enemyTextureHeight = 64;
     int health = 100;
 
     // weapon (current)
@@ -87,23 +98,25 @@ private:
         float alertRadius;
         std::string soundName;
     };
-    std::vector<weapon> weapons = {
-        //{1, 100, 0, true, 2.0f, 0.0f, 8.0f, "knife"},   // knife (K)
-        //{2, 4, 0, false, 70.0f, 0.2f, 16.0f, "pistol"},  // pistol (P)
-        //{3, 6, 0, false, 90.0f, 0.5f, 24.0f, "rifle"}   // rifle (S)
-    };
+    std::vector<weapon> weapons;
     int currentWeaponIndex;
     float fireCooldown = 0.2f;
     bool shotThisFrame = false, hasShot = false;
     bool rayCastEnemyToPlayer(const Enemy& enemy);
 
-    std::map<int, std::pair<int, int>> keysPositions;
+    std::map<int, std::pair<int, int>> keysPositions, keyWidthsHeights;
     std::vector<SDLTexturePtr> keysTextures;
-    float KEY_SIZE = 0.4f, keyRadius = 1.0f;
+    float KEY_SIZE = 0.4f, keyRadius = 1.9f;
+    std::map<int, int> keyTypeToSpriteID;
 
-    std::map<int, std::pair<int, int>> weaponsPositions;
+    std::map<int, std::pair<int, int>> weaponsPositions, weaponWidthsHeights;
     std::vector<SDLTexturePtr> weaponsTextures;
     float WEAPON_SIZE = 0.5f, weaponRadius = 1.9f;
+    std::map<int, int> weaponTypeToSpriteID;
+
+    std::vector<Sprite> AllSpriteTextures;
+    std::vector<int> renderOrder; // holds spriteIDs
+
 };
 
 #endif

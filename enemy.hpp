@@ -22,6 +22,7 @@ class Enemy {
     EnemyState state; 
     bool walking = false;
     float walk_segment_length = 1.5f;
+    int spriteID;
 
     // perception & memory
     bool alerted = false;
@@ -57,7 +58,7 @@ public:
     void addFrame(EnemyState s, int frame);
     void addFrames(const std::map<EnemyState, std::vector<int>>& Anim);
     void setAnimState(EnemyState s, bool );
-    void init();
+    void init(int spriteID_);
     void updateDirnNumWrt(const std::pair<float, float>& pos);
     int get_current_frame() const;
     int get_dirn_num() const;
@@ -74,4 +75,5 @@ public:
     int getDamageThisFrame() const { return damageThisFrame; }
     void clearDamageThisFrame() { damageThisFrame = 0; }
     bool isAlerted() const { return alerted; }
+    int get_spriteID() const { return spriteID; }
 };

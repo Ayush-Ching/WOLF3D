@@ -106,7 +106,8 @@ void Enemy::setAnimState(EnemyState s, bool lock = false){
     fracTime = 0.0f;
 }
 
-void Enemy::init(){
+void Enemy::init(int spriteID_){
+    spriteID = spriteID_;
     addFrames({
         {ENEMY_IDLE, {0}},
         {ENEMY_WALK, {1, 2, 3, 4}},

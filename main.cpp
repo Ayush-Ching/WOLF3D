@@ -1,16 +1,16 @@
 #include "WolfGame.hpp"
-
+#include <iostream>
 Game* game = nullptr;
 
 int main(int argc, char* argv[]) {
     game = new Game();
-    //game->loadEnemies("enemies.txt");
+    game->loadEnemies("enemies.txt");
     game->init("My Game", 100, 100, 800, 600, false);
-    AudioManager::loadAllAudios("audioConfig.txt");
-    game->placePlayerAt(2, 2, 0.0f);
-    game->loadMapDataFromFile("testMap.txt");
     game->loadAllTextures("textureMapping.txt");
     game->loadEnemyTextures("enemyFrames.txt");
+    AudioManager::loadAllAudios("audioConfig.txt");
+    game->loadMapDataFromFile("testMap.txt");
+    game->placePlayerAt(2, 2, 0.0f);
 
     const int FPS = 60;
     const float frameDelay = 1000.0f / FPS;

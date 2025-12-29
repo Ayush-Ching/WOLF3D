@@ -47,8 +47,16 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
     } else {
         isRunning = false;
     }
+    int i=0;
     for(const std::unique_ptr<Enemy>& e : enemies){
-        e->init();
+        e->init(static_cast<int>(AllSpriteTextures.size()));
+        AllSpriteTextures.push_back(Sprite{static_cast<int>(AllSpriteTextures.size()), 
+            e->get_position(), nullptr
+            , enemyTextureWidth, enemyTextureHeight,
+            true
+            });
+        enemySpriteIDToindex[e->get_spriteID()] = i;
+        i++;
     }
     AudioManager::init();
 }
@@ -246,6 +254,34 @@ void Game::update(float deltaTime)
         }
     //std::cout << "Player Health: " << health << std::endl;
         }
+
+        // Enemy position relative to player 
+        auto [ex, ey] = e->get_position();
+
+        float dx = ex - playerPosition.first;
+        float dy = ey - playerPosition.second;
+
+        float enemyDist = sqrt(dx*dx + dy*dy);
+
+        // Angle between player view and enemy 
+        float enemyAngle = atan2(dy, dx) - playerAngle;
+
+        while (enemyAngle > PI)  enemyAngle -= 2 * PI;
+        while (enemyAngle < -PI) enemyAngle += 2 * PI;
+
+        // Check if enemy is inside FOV 
+        float fovRad = FOV * (3.14159f / 180.0f);
+        float halfFov = fovRad / 2.0f;
+        if (fabs(enemyAngle) > halfFov){
+            //std::cout<<"enemy out of FOV\n";
+            continue; 
+        }
+        int frame = e->get_current_frame(), dir = e->get_dirn_num();
+        auto it = enemyTextures.find({frame, dir});
+        if (it == enemyTextures.end()) continue;
+        AllSpriteTextures[e->get_spriteID()].texture = it->second;
+        AllSpriteTextures[e->get_spriteID()].position = e->get_position();
+
     }
     if(hasShot){
         fireCooldown += deltaTime;
@@ -257,10 +293,12 @@ void Game::update(float deltaTime)
 
     // Update keys pickup
     for (const auto& [keyType, pos] : keysPositions) {
+        if(playerHasKey(keyType))
+            continue;
         auto [kx, ky] = pos;
         float keyX = kx + 0.5f;
         float keyY = ky + 0.5f;
-
+        
         float dx = keyX - playerPosition.first;
         float dy = keyY - playerPosition.second;
         float distanceSq = dx * dx + dy * dy;
@@ -268,13 +306,15 @@ void Game::update(float deltaTime)
         if (distanceSq < keyRadius * keyRadius) {
             acquireKey(keyType);
             // Remove key from map
-            keysPositions.erase(keyType);
+            AllSpriteTextures[keyTypeToSpriteID[keyType]].active = false;
             break; // Exit loop since we modified the map
         }
     }
 
     // Update weapons pickup
     for (const auto& [weaponType, pos] : weaponsPositions) {
+        if(playerHasWeapon(weaponType))
+            continue;
         auto [wx, wy] = pos;
         float weaponX = wx + 0.5f;
         float weaponY = wy + 0.5f;
@@ -286,10 +326,20 @@ void Game::update(float deltaTime)
         if (distanceSq < weaponRadius * weaponRadius) {
             acquireWeapon(weaponType);
             // Remove weapon from map
-            weaponsPositions.erase(weaponType);
+            AllSpriteTextures[weaponTypeToSpriteID[weaponType]].active = false;
             break; // Exit loop since we modified the map
         }
     }
+
+        // ------- Update Textures to be rendered ---------
+        renderOrder.clear();
+        
+        for (int i = 0; i < AllSpriteTextures.size(); ++i) {
+            if (AllSpriteTextures[i].active){
+                renderOrder.push_back(i);
+            }
+        }
+
 }
 
 void Game::render()
@@ -518,108 +568,70 @@ void Game::render()
             } 
         }
     }
-    // Rendering Enemy
-    std::sort(enemies.begin(), enemies.end(),
-        [&](const std::unique_ptr<Enemy>& e1,
-            const std::unique_ptr<Enemy>& e2)
-        {
-            float d1 = distSq(playerPosition, e1->get_position());
-            float d2 = distSq(playerPosition, e2->get_position());
-            return d1 > d2;   // '>' → farthest first
+    // Rendering Sprites
+    // Sort sprites by distance from player (far to near)
+    std::sort(renderOrder.begin(), renderOrder.end(),
+        [&](int a, int b) {
+            return distSq(playerPosition, AllSpriteTextures[a].position) >
+           distSq(playerPosition, AllSpriteTextures[b].position);
         });
-    int enemyShotIndex = -1, currentIndex = 0;
-    for (const auto& enemy : enemies) 
-    {
-        // Enemy position relative to player 
-        auto [ex, ey] = enemy->get_position();
-
-        float dx = ex - playerPosition.first;
-        float dy = ey - playerPosition.second;
-
-        float enemyDist = sqrt(dx*dx + dy*dy);
-
-        // Angle between player view and enemy 
-        float enemyAngle = atan2(dy, dx) - playerAngle;
-
-        while (enemyAngle > PI)  enemyAngle -= 2 * PI;
-        while (enemyAngle < -PI) enemyAngle += 2 * PI;
-
-        // Check if enemy is inside FOV 
-        if (fabs(enemyAngle) > halfFov){
-            //std::cout<<"enemy out of FOV\n";
-            continue; 
+    int enemyShotIndex = -1;
+    for (int i=0; i < renderOrder.size(); i++) {
+        int id = renderOrder[i];
+        const Sprite& sprite = AllSpriteTextures[id];
+        if (!sprite.texture){
+            std::cout << "Skipping sprite ID " << sprite.spriteID << " due to null texture.\n";
+            continue; // skip if texture is null
         }
-        // Project enemy into screen space
-        int screenX = (int)(
-            (enemyAngle + halfFov) / fovRad * ScreenHeightWidth.first
-        );
+        // Sprite position relative to player
+        auto [sx, sy] = sprite.position;
+        float dx = sx - playerPosition.first;
+        float dy = sy - playerPosition.second;
+        float spriteDist = sqrt(dx*dx + dy*dy);
+        // Angle between player view and sprite
+        float spriteAngle = atan2(dy, dx) - playerAngle;
+        while (spriteAngle > PI)  spriteAngle -= 2 * PI;
+        while (spriteAngle < -PI) spriteAngle += 2 * PI;
+        // Check if sprite is inside FOV
+        float fovRad = FOV * (3.14159f / 180.0f);
+        float halfFov = fovRad / 2.0f;
+        if (fabs(spriteAngle) > halfFov)
+            continue; // skip sprite if outside FOV
+        
+        // Project sprite onto screen
+        int screenX = (int)((spriteAngle + halfFov) / fovRad * ScreenHeightWidth.first);
 
-        // Perspective scaling 
-        int spriteHeight = (int)(ScreenHeightWidth.second / enemyDist);
-        int spriteWidth  = spriteHeight;
+        // Perspective scaling
+        int spriteHeight = (int)(ScreenHeightWidth.second / spriteDist);
+        int spriteWidth  = (int)(spriteHeight * ((float)sprite.textureWidth / sprite.textureHeight));
 
-        int drawStartY = -spriteHeight / 2 + ScreenHeightWidth.second / 2;
+        int drawStartY = -spriteHeight / 2 + ScreenHeightWidth.second / 2;;
         int drawEndY   =  spriteHeight / 2 + ScreenHeightWidth.second / 2;
+        int drawStartX = screenX - spriteWidth / 2;
+        int drawEndX   = screenX + spriteWidth / 2;
+
+        int centreX = ScreenHeightWidth.first / 2;
+        if(sprite.isEnemy && shotThisFrame && spriteDist < weapons[currentWeaponIndex].range){
+            enemyShotIndex = enemySpriteIDToindex.at(sprite.spriteID);
+        }
 
         if (drawStartY < 0) drawStartY = 0;
-        if (drawEndY >= ScreenHeightWidth.second)
-            drawEndY = ScreenHeightWidth.second - 1;
+        if (drawEndY >= ScreenHeightWidth.second) drawEndY = ScreenHeightWidth.second - 1;
+        if (drawStartX < 0) drawStartX = 0;
+        if (drawEndX >= ScreenHeightWidth.first) drawEndX = ScreenHeightWidth.first - 1;
 
-        int drawStartX = -spriteWidth / 2 + screenX;
-        int drawEndX   =  spriteWidth / 2 + screenX;
-        int screenCentreX = ScreenHeightWidth.first / 2;
-        if(shotThisFrame &&
-           screenX >= screenCentreX - spriteWidth / 2 &&
-           screenX <= screenCentreX + spriteWidth / 2 &&
-           enemyDist < weapons[currentWeaponIndex].range) 
-        {
-            enemyShotIndex = currentIndex;
+        SDL_Texture* texture = sprite.texture.get();
+
+        // Render sprite column by column
+        for (int x = drawStartX; x < drawEndX; x++) {
+            int texX = (int)((float)(x - (screenX - spriteWidth / 2)) / (float)spriteWidth * sprite.textureWidth);
+            if (texX < 0 || texX >= sprite.textureWidth) continue;
+            if (spriteDist < zBuffer[x]) {
+                SDL_Rect srcRect  = { texX, 0, 1, sprite.textureHeight };
+                SDL_Rect destRect = { x, drawStartY, 1, drawEndY - drawStartY };
+                SDL_RenderCopy(renderer.get(), texture, &srcRect, &destRect);
+            }
         }
-        // Select enemy texture 
-        if (enemyTextures.empty()){
-            //std::cout<<"0 elements in enemyTextures\n";
-            continue;
-        }
-        int frame = enemy->get_current_frame(), dir = enemy->get_dirn_num();
-        auto it = enemyTextures.find({frame, dir});
-        if (it == enemyTextures.end()) continue;
-        SDL_Texture* tex = it->second.get();
-
-        // distance-based shading 
-        float maxLightDist = 8.0f;
-        float shade = 1.0f - std::min(enemyDist / maxLightDist, 1.0f);
-        Uint8 brightness = (Uint8)(40 + shade * 215);
-        SDL_SetTextureColorMod(tex,
-                            brightness, brightness, brightness);
-        
-        int texW, texH;
-        SDL_QueryTexture(tex, nullptr, nullptr, &texW, &texH);
-
-        // Draw sprite column-by-column
-        for (int x = drawStartX; x < drawEndX; x++)
-        {
-            if (x < 0 || x >= ScreenHeightWidth.first)
-                continue;
-
-            // Z-buffer check (VERY IMPORTANT) 
-            if (enemyDist >= zBuffer[x])
-                continue; 
-            zBuffer[x] = enemyDist;
-            int texX = (int)(
-                (x - drawStartX) * texW / spriteWidth
-            );
-
-            SDL_Rect srcRect = { texX, 0, 1, texH };
-            SDL_Rect dstRect = {
-                x,
-                drawStartY,
-                1,
-                drawEndY - drawStartY
-            };
-
-            SDL_RenderCopy(renderer.get(), tex, &srcRect, &dstRect);
-        }
-        currentIndex++;
     }
     if (enemyShotIndex != -1) {
         float dist = distSq(
@@ -645,151 +657,6 @@ void Game::render()
     else if (shotThisFrame) {
         shotThisFrame = false;
     }
-
-    // Rendering Keys
-    for (const auto& keyPos : keysPositions) {
-        int keyType = keyPos.first;
-        auto [kx, ky] = keyPos.second;
-
-        float dx = kx + 0.5f - playerPosition.first;
-        float dy = ky + 0.5f - playerPosition.second;
-
-        float keyDist = sqrt(dx*dx + dy*dy);
-
-        float keyAngle = atan2(dy, dx) - playerAngle;
-
-        while (keyAngle > PI)  keyAngle -= 2 * PI;
-        while (keyAngle < -PI) keyAngle += 2 * PI;
-
-        if (fabs(keyAngle) > halfFov){
-            continue; 
-        }
-
-        int screenX = (int)(
-            (keyAngle + halfFov) / fovRad * ScreenHeightWidth.first
-        );
-
-        float spriteScale = KEY_SIZE; 
-        int spriteHeight = (int)(
-            ScreenHeightWidth.second * spriteScale / keyDist
-        );
-        int spriteWidth = spriteHeight;
-
-        int drawEndY   = ScreenHeightWidth.second / 2 + spriteHeight;
-        int drawStartY = drawEndY - spriteHeight;
-
-        if (drawStartY < 0) drawStartY = 0;
-        if (drawEndY >= ScreenHeightWidth.second)
-            drawEndY = ScreenHeightWidth.second - 1;
-
-        int drawStartX = -spriteWidth / 2 + screenX;
-        int drawEndX   =  spriteWidth / 2 + screenX;
-
-        SDL_Texture* keyTex = nullptr;
-        if (keyType == 1) keyTex = keysTextures[0].get(); // blue key
-        if (keyType == 2) keyTex = keysTextures[1].get(); // red key
-        if (keyType == 3) keyTex = keysTextures[2].get(); // gold key
-
-        if (!keyTex) continue;
-
-        for (int x = drawStartX; x < drawEndX; x++)
-        {
-            if (x < 0 || x >= ScreenHeightWidth.first)
-                continue;
-
-            if (keyDist >= zBuffer[x])
-                continue; 
-            zBuffer[x] = keyDist;
-
-            int texW, texH;
-            SDL_QueryTexture(keyTex, nullptr, nullptr, &texW, &texH);
-            int texX = (int)(
-                (x - drawStartX) * texW / spriteWidth
-            );
-            SDL_Rect srcRect = { texX, 0, 1, texH };
-            SDL_Rect dstRect = {
-                x,
-                drawStartY,
-                1,
-                drawEndY - drawStartY
-            };
-            SDL_RenderCopy(renderer.get(), keyTex, &srcRect, &dstRect);
-        }
-    }
-
-    // Rendering Weapon collectible
-    for (const auto weaponPos : weaponsPositions){
-        int weaponType = weaponPos.first;
-        auto [wx, wy] = weaponPos.second;
-        float dx = wx + 0.5f - playerPosition.first;
-        float dy = wy + 0.5f - playerPosition.second;
-
-        float wDist = sqrt(dx*dx + dy*dy);
-
-        float wAngle = atan2(dy, dx) - playerAngle;
-
-        while (wAngle > PI)  wAngle -= 2 * PI;
-        while (wAngle < -PI) wAngle += 2 * PI;
-
-        if (fabs(wAngle) > halfFov){
-            continue; 
-        }
-
-        int screenX = (int)(
-            (wAngle + halfFov) / fovRad * ScreenHeightWidth.first
-        );
-
-        float spriteScale = WEAPON_SIZE;
-
-        if (weaponType == 3) // rifle
-            spriteScale *= 1.9f;
-
-        int spriteHeight = (int)(
-            ScreenHeightWidth.second * spriteScale / wDist
-        );
-        int spriteWidth = spriteHeight;
-
-        int drawEndY   = ScreenHeightWidth.second / 2 + spriteHeight;
-        int drawStartY = drawEndY - spriteHeight;
-
-        if (drawStartY < 0) drawStartY = 0;
-        if (drawEndY >= ScreenHeightWidth.second)
-            drawEndY = ScreenHeightWidth.second - 1;
-
-        int drawStartX = -spriteWidth / 2 + screenX;
-        int drawEndX   =  spriteWidth / 2 + screenX;
-
-        SDL_Texture* wTex = nullptr;
-        if (weaponType == 1) wTex = weaponsTextures[0].get(); // knife
-        if (weaponType == 2) wTex = weaponsTextures[1].get(); // pistol
-        if (weaponType == 3) wTex = weaponsTextures[2].get(); // shotgun/ rifle
-
-        if (!wTex) continue;
-        
-        for (int x = drawStartX; x < drawEndX; x++)
-        {
-            if (x < 0 || x >= ScreenHeightWidth.first)
-                continue;
-
-            if (wDist >= zBuffer[x])
-                continue; 
-            zBuffer[x] = wDist;
-
-            int texW, texH;
-            SDL_QueryTexture(wTex, nullptr, nullptr, &texW, &texH);
-            int texX = (int)(
-                (x - drawStartX) * texW / spriteWidth
-            );
-            SDL_Rect srcRect = { texX, 0, 1, texH };
-            SDL_Rect dstRect = {
-                x,
-                drawStartY,
-                1,
-                drawEndY - drawStartY
-            };
-            SDL_RenderCopy(renderer.get(), wTex, &srcRect, &dstRect);
-        }
-    }
     SDL_RenderPresent(renderer.get()); 
 }
 
@@ -814,18 +681,28 @@ void Game::loadMapDataFromFile(const char* filename)
 
         while (iss >> token) {                 // space-separated
             // Key handling
+            //std::cout<<token<<"\n";
             if(token == "B"){
                 keysPositions[1] = {row.size(), rowIndex};
+                keyTypeToSpriteID[1] = AllSpriteTextures.size();
+                AllSpriteTextures.push_back(Sprite{ static_cast<int>(AllSpriteTextures.size()), std::pair<float, float>{row.size(), rowIndex}, keysTextures[0],
+                 keyWidthsHeights[1].first, keyWidthsHeights[1].second});
                 row.push_back(0);
                 continue;
             }
             else if(token == "R"){
                 keysPositions[2] = {row.size(), rowIndex};
+                keyTypeToSpriteID[2] = AllSpriteTextures.size();
+                AllSpriteTextures.push_back(Sprite{ static_cast<int>(AllSpriteTextures.size()), std::pair<float, float>{row.size(), rowIndex}, keysTextures[1],
+                 keyWidthsHeights[2].first, keyWidthsHeights[2].second});
                 row.push_back(0);
                 continue;
             }
             else if(token == "G"){
                 keysPositions[3] = {row.size(), rowIndex};
+                keyTypeToSpriteID[3] = AllSpriteTextures.size();
+                AllSpriteTextures.push_back(Sprite{ static_cast<int>(AllSpriteTextures.size()), std::pair<float, float>{row.size(), rowIndex}, keysTextures[2], 
+                 keyWidthsHeights[3].first, keyWidthsHeights[3].second});
                 row.push_back(0);
                 continue;
             }
@@ -833,17 +710,25 @@ void Game::loadMapDataFromFile(const char* filename)
             // Weapon handling
             if(token == "K"){
                 weaponsPositions[1] = {row.size(), rowIndex};
+                weaponTypeToSpriteID[1] = AllSpriteTextures.size();
+                AllSpriteTextures.push_back(Sprite{ static_cast<int>(AllSpriteTextures.size()), std::pair<float, float>{row.size(), rowIndex}, weaponsTextures[0],
+                 weaponWidthsHeights[1].first, weaponWidthsHeights[1].second});
                 row.push_back(0);
                 continue;
             }
             else if(token == "P"){
                 weaponsPositions[2] = {row.size(), rowIndex};
+                weaponTypeToSpriteID[2] = AllSpriteTextures.size();
+                AllSpriteTextures.push_back(Sprite{ static_cast<int>(AllSpriteTextures.size()), std::pair<float, float>{row.size(), rowIndex}, weaponsTextures[1],
+                 weaponWidthsHeights[2].first, weaponWidthsHeights[2].second});
                 row.push_back(0);
                 continue;
             }
             else if(token == "S"){
                 weaponsPositions[3] = {row.size(), rowIndex};
-                std::cout << "Added shotgun position at (" << row.size() << ", " << rowIndex << ")\n";
+                weaponTypeToSpriteID[3] = AllSpriteTextures.size();
+                AllSpriteTextures.push_back(Sprite{ static_cast<int>(AllSpriteTextures.size()), std::pair<float, float>{row.size(), rowIndex}, weaponsTextures[2],
+                 weaponWidthsHeights[3].first, weaponWidthsHeights[3].second});
                 row.push_back(0);
                 continue;
             }
@@ -1242,8 +1127,16 @@ void Game::loadKeysTexture(const char* filePath)
                   << filePath << " | " << IMG_GetError() << "\n";
         return;
     }
-
+    int keyType = keysTextures.size() + 1;
+    int height = 0, width = 0;
+    if (SDL_QueryTexture(raw, nullptr, nullptr, &width, &height) != 0) {
+        std::cerr << "Failed to query texture: "
+                  << SDL_GetError() << "\n";
+        SDL_DestroyTexture(raw);
+        return;
+    }
     keysTextures.emplace_back(raw, SDL_DestroyTexture);
+    keyWidthsHeights[keyType] = std::make_pair(width, height);
 }
 
 void Game::acquireKey(int keyType) {
@@ -1261,7 +1154,15 @@ void Game::loadWeaponsTexture(const char* filePath)
                   << filePath << " | " << IMG_GetError() << "\n";
         return;
     }
-
+    int height = 0, width = 0;
+    if (SDL_QueryTexture(raw, nullptr, nullptr, &width, &height) != 0) {
+        std::cerr << "Failed to query texture: "
+                  << SDL_GetError() << "\n";
+        SDL_DestroyTexture(raw);
+        return;
+    }
+    int weaponsType = weaponsTextures.size() + 1;
+    weaponWidthsHeights[weaponsType] = std::make_pair(width, height);
     weaponsTextures.emplace_back(raw, SDL_DestroyTexture);
 }   
 
@@ -1287,7 +1188,6 @@ void Game::acquireWeapon(int weaponType) {
     //{2, 4, 0, false, 70.0f, 0.2f, 16.0f, "pistol"},  // pistol (P)
     //{3, 6, 0, false, 90.0f, 0.5f, 24.0f, "rifle"}   // rifle (S)
     currentWeaponIndex = weaponType - 1;
-    std::cout << "Acquired weapon of type: " << weaponType << "\n";
     AudioManager::playSFX("pickup", MIX_MAX_VOLUME / 2);
 }
 
