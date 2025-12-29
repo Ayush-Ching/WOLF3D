@@ -98,8 +98,8 @@ private:
         float alertRadius;
         std::string soundName;
     };
-    std::vector<weapon> weapons;
-    int currentWeaponIndex;
+    std::map<int, weapon> weapons;
+    int currentWeapon;
     float fireCooldown = 0.2f;
     bool shotThisFrame = false, hasShot = false;
     bool rayCastEnemyToPlayer(const Enemy& enemy);

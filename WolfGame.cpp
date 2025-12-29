@@ -76,17 +76,17 @@ void Game::handleEvents()
             SDL_SetRelativeMouseMode(SDL_TRUE);   // capture mouse
             //std::cout << "Mouse captured\n";
             if(!hasShot && weapons.size() > 0){
-                if(weapons[currentWeaponIndex].ammo == 0 && weapons[currentWeaponIndex].multiplier > 1){
+                if(weapons[currentWeapon].ammo == 0 && weapons[currentWeapon].multiplier > 1){
                     std::cout << "Out of ammo!\n";
                 }
                 else{
                     shotThisFrame = true;
                     hasShot = true;
                     fireCooldown = 0.0f;
-                    if(weapons[currentWeaponIndex].multiplier > 1){
-                        weapons[currentWeaponIndex].ammo--;
+                    if(weapons[currentWeapon].multiplier > 1){
+                        weapons[currentWeapon].ammo--;
                     }
-                    AudioManager::playSFX(weapons[currentWeaponIndex].soundName, MIX_MAX_VOLUME);
+                    AudioManager::playSFX(weapons[currentWeapon].soundName, MIX_MAX_VOLUME);
                 }
             }
             else{
@@ -163,15 +163,15 @@ void Game::handleEvents()
     // Weapon switching (number keys)
     if(keystate[SDL_SCANCODE_1]){
         if(playerHasWeapon(1))
-            currentWeaponIndex = 0;
+            currentWeapon = 1;
     }
     if(keystate[SDL_SCANCODE_2]){
         if(playerHasWeapon(2))
-            currentWeaponIndex = 1;
+            currentWeapon = 2;
     }
     if(keystate[SDL_SCANCODE_3]){
         if(playerHasWeapon(3))
-            currentWeaponIndex = 2;
+            currentWeapon = 3;
     }
 
 }
@@ -246,10 +246,10 @@ void Game::update(float deltaTime)
             if(health < 0) health = 0;
 
         // Update Alerts
-        if(shotThisFrame && weapons[currentWeaponIndex].multiplier > 1 && !e->isAlerted()){
+        if(shotThisFrame && weapons[currentWeapon].multiplier > 1 && !e->isAlerted()){
             float dist = distSq(playerPosition, e->get_position());
             dist = pow(dist, 0.5f);
-            if(dist <= weapons[currentWeaponIndex].alertRadius)
+            if(dist <= weapons[currentWeapon].alertRadius)
                 e->alert();
         }
     //std::cout << "Player Health: " << health << std::endl;
@@ -285,7 +285,7 @@ void Game::update(float deltaTime)
     }
     if(hasShot){
         fireCooldown += deltaTime;
-        if(fireCooldown >= weapons[currentWeaponIndex].coolDownTime){
+        if(fireCooldown >= weapons[currentWeapon].coolDownTime){
             hasShot = false;
             shotThisFrame = false;
         }
@@ -580,7 +580,8 @@ void Game::render()
         int id = renderOrder[i];
         const Sprite& sprite = AllSpriteTextures[id];
         if (!sprite.texture){
-            std::cout << "Skipping sprite ID " << sprite.spriteID << " due to null texture.\n";
+            //std::cout << "Skipping sprite ID " << sprite.spriteID << " due to null texture.\n";
+            //std::cout << sprite.isEnemy << "\n";
             continue; // skip if texture is null
         }
         // Sprite position relative to player
@@ -611,7 +612,7 @@ void Game::render()
         int drawEndX   = screenX + spriteWidth / 2;
 
         int centreX = ScreenHeightWidth.first / 2;
-        if(sprite.isEnemy && shotThisFrame && spriteDist < weapons[currentWeaponIndex].range){
+        if(sprite.isEnemy && shotThisFrame && spriteDist < weapons[currentWeapon].range){
             enemyShotIndex = enemySpriteIDToindex.at(sprite.spriteID);
         }
 
@@ -641,7 +642,7 @@ void Game::render()
         dist = pow(dist, 0.5f); // sqrt
         int dmg=0;
         if(canShootEnemy(dist))
-            dmg = (rand() & 31) * weapons[currentWeaponIndex].multiplier;
+            dmg = (rand() & 31) * weapons[currentWeapon].multiplier;
         //std::cout << "Enemy at index " << enemyShotIndex << " shot for " << dmg << " damage.\n";
         if (rayCastEnemyToPlayer(*enemies[enemyShotIndex])){
             enemies[enemyShotIndex]->takeDamage(dmg); 
@@ -1084,7 +1085,7 @@ bool Game::canShootEnemy(float dist){
     float t = (dist - MIN_DIST) / (MAX_DIST - MIN_DIST);
 
     // Quadratic falloff (feels very Wolf-like)
-    int errorDivisor = ((int) (weapons[currentWeaponIndex].accuracy - 1) * (1.0f - t * t)) + 1;
+    int errorDivisor = ((int) (weapons[currentWeapon].accuracy - 1) * (1.0f - t * t)) + 1;
     return (rand() % errorDivisor) != 0;
 }
 
@@ -1173,13 +1174,13 @@ void Game::acquireWeapon(int weaponType) {
     }
     switch(weaponType){
         case 1:
-            weapons.push_back({1, 100, 0, 2.0f, 0.0f, 8.0f, "knife"});
+            weapons[1] = weapon({1, 100, 0, 2.0f, 0.0f, 8.0f, "knife"});
             break;
         case 2:
-            weapons.push_back({2, 4, 30, 70.0f, 0.2f, 16.0f, "pistol"});
+            weapons[2] = weapon({2, 4, 30, 70.0f, 0.2f, 16.0f, "pistol"});
             break;
         case 3:
-            weapons.push_back({3, 6, 50, 90.0f, 0.5f, 24.0f, "rifle"});
+            weapons[3] = weapon({3, 6, 50, 90.0f, 0.5f, 24.0f, "rifle"});
             break;
         default:
             std::cerr << "Unhandled weapon type: " << weaponType << "\n";
@@ -1187,13 +1188,13 @@ void Game::acquireWeapon(int weaponType) {
     //{1, 100, 0, true, 2.0f, 0.0f, 8.0f, "knife"},   // knife (K)
     //{2, 4, 0, false, 70.0f, 0.2f, 16.0f, "pistol"},  // pistol (P)
     //{3, 6, 0, false, 90.0f, 0.5f, 24.0f, "rifle"}   // rifle (S)
-    currentWeaponIndex = weaponType - 1;
+    currentWeapon = weaponType;
     AudioManager::playSFX("pickup", MIX_MAX_VOLUME / 2);
 }
 
 bool Game::playerHasWeapon(int weaponType) {
-    for (const auto& w : weapons) {
-        if (w.multiplier == weaponType) {
+    for (const auto& [i, w] : weapons) {
+        if (i == weaponType) {
             return true;
         }
     }
