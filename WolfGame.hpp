@@ -61,6 +61,9 @@ private:
     SDLWindowPtr   window   {nullptr, SDL_DestroyWindow};
     SDLRendererPtr renderer {nullptr, SDL_DestroyRenderer};
     float playerAngle, FOV=45.0f, playerSpeed=2.0f, rotationSensitivity=0.05f;
+    float fovRad = FOV * (PI / 180.0f);
+    float halfFov = fovRad / 2.0f;
+
     float playerHeight=0.5f, mouseSensitivity=0.002f;
     float playerSquareSize=1.0f;
     std::pair<float, float> playerPosition;

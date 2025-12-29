@@ -270,8 +270,6 @@ void Game::update(float deltaTime)
         while (enemyAngle < -PI) enemyAngle += 2 * PI;
 
         // Check if enemy is inside FOV 
-        float fovRad = FOV * (3.14159f / 180.0f);
-        float halfFov = fovRad / 2.0f;
         if (fabs(enemyAngle) > halfFov){
             //std::cout<<"enemy out of FOV\n";
             continue; 
@@ -356,9 +354,7 @@ void Game::render()
     }
     // Raycasting for walls
     int raysCount = ScreenHeightWidth.first;
-    float fovRad = FOV * (3.14159f / 180.0f);
-    float halfFov = fovRad / 2.0f;
-
+    
     for (int ray = 0; ray < raysCount; ray++)
     {
         // Angle of this ray
@@ -594,8 +590,6 @@ void Game::render()
         while (spriteAngle > PI)  spriteAngle -= 2 * PI;
         while (spriteAngle < -PI) spriteAngle += 2 * PI;
         // Check if sprite is inside FOV
-        float fovRad = FOV * (3.14159f / 180.0f);
-        float halfFov = fovRad / 2.0f;
         if (fabs(spriteAngle) > halfFov)
             continue; // skip sprite if outside FOV
         
