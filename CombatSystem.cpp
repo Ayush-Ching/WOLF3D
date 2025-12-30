@@ -152,8 +152,10 @@ bool Game::playerHasWeapon(int weaponType) {
     return false;
 }
 
-void Game::spawnRandomAmmoPack(std::pair<float, float> pos){
+void Game::spawnRandomAmmoPack(std::pair<int, int> pos){
     int type = 3 + (rand() % 2);
     int spriteID = AllSpriteTextures.size();
     AmmoPackPositions[{type, spriteID}] = pos;
+    AllSpriteTextures.push_back(Sprite{ spriteID, pos, ammoPackTextures[2],
+                 ammoPackWidthsHeights[3].first, ammoPackWidthsHeights[3].second});
 }

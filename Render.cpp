@@ -272,15 +272,38 @@ void Game::render()
         int drawEndX   = screenX + spriteWidth / 2;
 
         int centreX = ScreenHeightWidth.first / 2;
-        if(sprite.isEnemy && shotThisFrame && spriteDist < weapons[currentWeapon].range){
+
+        if(sprite.isEnemy && shotThisFrame && spriteDist < weapons[currentWeapon].range
+            && drawStartX + spriteWidth * (1-enemyBoundBox)/2 < centreX
+            && drawEndX - spriteWidth * (1-enemyBoundBox)/2 > centreX
+        ){
             enemyShotIndex = enemySpriteIDToindex.at(sprite.spriteID);
-            std::cout << "Enemy at sprite ID " << sprite.spriteID << " selected for shooting.\n";
+            std::cout << drawStartX << ", " << drawEndX << " " << centreX << "\n";
+        }
+        else if(shotThisFrame && sprite.isEnemy && 
+            ( drawStartX + spriteWidth * (1-enemyBoundBox) > centreX
+            || drawEndX - spriteWidth * (1-enemyBoundBox) < centreX)
+        ){
+            std::cout << "Enemy at sprite ID " << sprite.spriteID << " not at centre\n";
         }
         else if(sprite.isEnemy && shotThisFrame){ 
             std::cout << "Enemy at sprite ID " << sprite.spriteID << " out of range for shooting,\n dist=" << spriteDist << " and range=" << weapons[currentWeapon].range << "\n";
         }
         else if(shotThisFrame){
             std::cout << "Sprite ID " << sprite.spriteID << " is not an enemy.\n";
+        }
+
+        if(sprite.isEnemy){
+
+            SDL_RenderDrawLine(renderer.get(),
+                (int)(drawStartX + spriteWidth * (1-enemyBoundBox)/2), 0,
+                (int)(drawStartX + spriteWidth * (1-enemyBoundBox)/2), ScreenHeightWidth.second
+            );
+
+            SDL_RenderDrawLine(renderer.get(),
+                (int)(drawEndX - spriteWidth * (1-enemyBoundBox)/2), 0,
+                (int)(drawEndX - spriteWidth * (1-enemyBoundBox)/2), ScreenHeightWidth.second
+            );
         }
 
         if (drawStartY < 0) drawStartY = 0;
@@ -302,6 +325,7 @@ void Game::render()
         }
     }
     if (enemyShotIndex != -1) {
+        auto [x, y] = enemies[enemyShotIndex]->get_position();
         float dist = distSq(
             playerPosition,
             enemies[enemyShotIndex]->get_position()
@@ -312,13 +336,19 @@ void Game::render()
             dmg = (rand() & 31) * weapons[currentWeapon].multiplier;
         std::cout << "Enemy at index " << enemyShotIndex << " shot for " << dmg << " damage.\n";
         if (rayCastEnemyToPlayer(*enemies[enemyShotIndex], true)){
-            if(enemies[enemyShotIndex]->takeDamage(dmg))
-                spawnRandomAmmoPack(enemies[enemyShotIndex]->get_position()); 
+            if(enemies[enemyShotIndex]->takeDamage(dmg)){
+                
+                spawnRandomAmmoPack(std::make_pair((int)x, (int)y)); 
+            }
         }
         shotThisFrame = false;
     }
     else if (shotThisFrame) {
         shotThisFrame = false;
     }
+        SDL_RenderDrawLine(renderer.get(),
+            ScreenHeightWidth.first/2, 0,
+            ScreenHeightWidth.first/2, ScreenHeightWidth.second
+            );
     SDL_RenderPresent(renderer.get()); 
 }

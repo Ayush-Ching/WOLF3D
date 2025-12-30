@@ -76,7 +76,7 @@ public:
     bool canMoveTo(float x, float y);
     void loadHealthPackTexture(const char* filePath);
     void loadAmmoPackTexture(const char* filePath);
-    void spawnRandomAmmoPack(std::pair<float, float>);
+    void spawnRandomAmmoPack(std::pair<int, int>);
 private:
     bool isRunning;
     SDLWindowPtr   window   {nullptr, SDL_DestroyWindow};
@@ -113,6 +113,7 @@ private:
     int health = 100;
 
     // weapon (current)
+    float enemyBoundBox = 0.27f;
     struct weapon {
         int multiplier; // damage multiplier
         int accuracy;   // higher is better (1=never hit, 2=50%, 3=66%, etc)
@@ -159,6 +160,7 @@ private:
     std::vector<SDLTexturePtr> ammoPackTextures;
     std::map<int, int> ammoAmounts = {{1,15}, {2,10}, {3,5}, {4,5}};
     float ammoPackRadius = 1.0f;
+    float ammoPackSpawnDist = 1.0f;
 
     std::vector<Sprite> AllSpriteTextures;
     std::vector<int> renderOrder; // holds spriteIDs
