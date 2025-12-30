@@ -160,7 +160,6 @@ private:
     std::vector<SDLTexturePtr> ammoPackTextures;
     std::map<int, int> ammoAmounts = {{1,15}, {2,10}, {3,5}, {4,5}};
     float ammoPackRadius = 1.0f;
-    float ammoPackSpawnDist = 1.0f;
 
     std::vector<Sprite> AllSpriteTextures;
     std::vector<int> renderOrder; // holds spriteIDs

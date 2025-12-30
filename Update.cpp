@@ -195,6 +195,33 @@ void Game::update(float deltaTime)
         }
     }
 
+    // Update Ammopack Pickups
+    for (const auto& [key, pos] : AmmoPackPositions){
+        auto [Type, spriteID] = key;
+        int weaponType = 2 + ((Type+1) % 2);
+        if(!playerHasWeapon(weaponType)){
+            continue; // Player doesn't have the weapon
+        }
+        if(!AllSpriteTextures[spriteID].active){
+            continue; // Already picked up
+        }
+        auto [ax, ay] = pos;
+        float x = ax + 0.5f;
+        float y = ay + 0.5f;
+        float dx = x - playerPosition.first;
+        float dy = y - playerPosition.second;
+        float distanceSq = dx * dx + dy * dy;
+        if(distanceSq < ammoPackRadius * ammoPackRadius){
+            int amt = ammoAmounts[Type];
+            weapons[weaponType].ammo += amt;
+            std::cout<<"Ammo of weapon num "<<weaponType<<" = "<<weapons[weaponType].ammo<<std::endl;
+            AudioManager::playSFX("pickup", MIX_MAX_VOLUME / 2);
+            // Remove health pack from map
+            AllSpriteTextures[spriteID].active = false;
+            break; // Exit loop since we modified the map
+        }
+    }
+
     // ------- Update Textures to be rendered ---------
     renderOrder.clear();
         
