@@ -35,5 +35,7 @@ void Game::init(const char *title, int xpos, int ypos, int width, int height, bo
         enemySpriteIDToindex[e->get_spriteID()] = i;
         i++;
     }
+    if(FOV > 80)
+        std::cout<<"Warning : Too big FOV, V close to 90 deg\n";
     AudioManager::init();
 }

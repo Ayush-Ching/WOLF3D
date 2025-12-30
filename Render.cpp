@@ -55,7 +55,8 @@ void Game::render()
 
         bool hitWall = false;
         int hitSide = 0; // 0 = vertical hit, 1 = horizontal hit
-
+        int MapWidth = Map[0].size();
+        int MapHeight= Map.size();
         while (!hitWall)
         {
             // Jump to next grid square
@@ -70,6 +71,12 @@ void Game::render()
             }
 
             // Check if the ray hit a wall
+            if (mapX < 0 || mapX >= MapWidth ||
+                mapY < 0 || mapY >= MapHeight) {
+                hitWall = true;
+                break;
+            }
+
             if (Map[mapY][mapX] > 0 && !isDoor(Map[mapY][mapX])) {
                 hitWall = true;
             }
@@ -140,6 +147,8 @@ void Game::render()
 
         // Wall Texture
         int texId = Map[mapY][mapX] - 1;
+        if (texId < 0 || texId >= wallTextures.size())
+            continue;
         int imgWidth = wallTextureWidths[texId], imgHeight = wallTextureHeights[texId];
         
         // -------- distance-based shading --------
@@ -193,6 +202,10 @@ void Game::render()
                 int texX = ((int)(floorX * imgWidth)) % imgWidth;
                 int texY = ((int)(floorY * imgHeight)) % imgHeight;
 
+                texX = (texX % imgWidth + imgWidth) % imgWidth;
+                texY = (texY % imgHeight + imgHeight) % imgHeight;
+
+
                 SDL_Rect srcRect  = { texX, texY, 1, 1 };
                 SDL_Rect destRect = { ray, y, 1, 1 };
                 SDL_RenderCopy(renderer.get(), floorTextures[0].get(), &srcRect, &destRect);
@@ -213,6 +226,9 @@ void Game::render()
 
                 int texX = ((int)(ceilX * imgWidth)) % imgWidth;
                 int texY = ((int)(ceilY * imgHeight)) % imgHeight;
+
+                texX = (texX % imgWidth + imgWidth) % imgWidth;
+                texY = (texY % imgHeight + imgHeight) % imgHeight;
 
                 SDL_Rect srcRect  = { texX, texY, 1, 1 };
                 SDL_Rect destRect = { ray, y, 1, 1 };
@@ -245,6 +261,9 @@ void Game::render()
         float dx = sx - playerPosition.first;
         float dy = sy - playerPosition.second;
         float spriteDist = sqrt(dx*dx + dy*dy);
+        if(spriteDist < playerSquareSize / 2)
+            continue;
+
         // Angle between player view and sprite
         float spriteAngle = atan2(dy, dx) - playerAngle;
         while (spriteAngle > PI)  spriteAngle -= 2 * PI;
@@ -255,6 +274,7 @@ void Game::render()
         
         // Project sprite onto screen
         int screenX = (int)((spriteAngle + halfFov) / fovRad * ScreenHeightWidth.first);
+        screenX = std::clamp(screenX, 0, ScreenHeightWidth.first - 1);
 
         // Perspective scaling
         int spriteHeight = (int)(ScreenHeightWidth.second / spriteDist);
@@ -303,6 +323,7 @@ void Game::render()
         for (int x = drawStartX; x < drawEndX; x++) {
             int texX = (int)((float)(x - (screenX - spriteWidth / 2)) / (float)spriteWidth * sprite.textureWidth);
             if (texX < 0 || texX >= sprite.textureWidth) continue;
+            if(x < 0 || x >= zBuffer.size()) continue;
             if (spriteDist < zBuffer[x]) {
                 SDL_Rect srcRect  = { texX, 0, 1, sprite.textureHeight };
                 SDL_Rect destRect = { x, drawStartY, 1, drawEndY - drawStartY };
