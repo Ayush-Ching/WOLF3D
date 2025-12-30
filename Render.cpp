@@ -311,14 +311,9 @@ void Game::render()
         if(canShootEnemy(dist))
             dmg = (rand() & 31) * weapons[currentWeapon].multiplier;
         std::cout << "Enemy at index " << enemyShotIndex << " shot for " << dmg << " damage.\n";
-        if (rayCastEnemyToPlayer(*enemies[enemyShotIndex])){
-            enemies[enemyShotIndex]->takeDamage(dmg); 
-            float relativeAngle = atan2(
-                enemies[enemyShotIndex]->get_position().second - playerPosition.second,
-                enemies[enemyShotIndex]->get_position().first  - playerPosition.first
-            ) - playerAngle;
-            while (relativeAngle > PI)  relativeAngle -= 2 * PI;
-            while (relativeAngle < -PI) relativeAngle += 2 * PI;
+        if (rayCastEnemyToPlayer(*enemies[enemyShotIndex], true)){
+            if(enemies[enemyShotIndex]->takeDamage(dmg))
+                spawnRandomAmmoPack(enemies[enemyShotIndex]->get_position()); 
         }
         shotThisFrame = false;
     }

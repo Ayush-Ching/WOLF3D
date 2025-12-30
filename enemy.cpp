@@ -50,7 +50,7 @@ void Enemy::_process(float deltaTime, const std::pair<float, float>& playerPosit
                 if(state==ENEMY_DEAD){
                     isDead = true;
                     stateLocked = true;
-                    //std::cout << "Enemy died.\n";
+                    
                     return;
                 }
                 if(!walking){   // Pain or shooting end
@@ -296,11 +296,12 @@ void Enemy::think(const std::pair<float, float>& playerPosition, float playerAng
 void Enemy::updateCanSeePlayer(bool x){
     canSeePlayer = x;
 }
-void Enemy::takeDamage(int dmg){
+bool Enemy::takeDamage(int dmg){
     justTookDamage = true;
     health -= dmg;
     std::cout << "Enemy took " << dmg << " damage, health now " << health << std::endl;
     if(health < 0) health = 0;
+    return health==0;
 }
 
 bool Enemy::canEnterPain(){

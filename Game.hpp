@@ -75,8 +75,8 @@ public:
     void loadWeaponsTexture(const char* filePath);
     bool canMoveTo(float x, float y);
     void loadHealthPackTexture(const char* filePath);
-
-
+    void loadAmmoPackTexture(const char* filePath);
+    void spawnRandomAmmoPack(std::pair<float, float>);
 private:
     bool isRunning;
     SDLWindowPtr   window   {nullptr, SDL_DestroyWindow};
@@ -126,7 +126,7 @@ private:
     int currentWeapon;
     float fireCooldown = 0.2f;
     bool shotThisFrame = false, hasShot = false;
-    bool rayCastEnemyToPlayer(const Enemy& enemy);
+    bool rayCastEnemyToPlayer(const Enemy& enemy, bool isPlayer);
 
     std::map<int, std::pair<int, int>> keysPositions, keyWidthsHeights;
     std::vector<SDLTexturePtr> keysTextures;
@@ -143,12 +143,22 @@ private:
     //(there can be multiple pack of same type)
     std::map<std::pair<int, int>, std::pair<int, int>> HealthPackPositions;
     
-    // Keys for the following are health pack type only
+    // Keys for the following are health pack type only 
     std::map<int, std::pair<int, int>> healthPackWidthsHeights;
-    std::vector<SDLTexturePtr> healthPackTextures;
+    std::vector<SDLTexturePtr> healthPackTextures; // except vectors ofcourse
     std::map<int, int> healAmounts = {{1,10}, {2,25}};    
     float healthPackRadius = 1.0f;
     // health packs: 1 = small (+10), 2 = large (+25)
+
+    // Same Logic for Ammo packs
+    std::map<std::pair<int, int>, std::pair<int, int>> AmmoPackPositions;
+
+    // Ammo Pack Types 1 = small (+15 pistol), 2 = large (+10 rifle)
+    // 3/4 -> random spawn on enemy death (+5 pistol/rifle)
+    std::map<int, std::pair<int, int>> ammoPackWidthsHeights;
+    std::vector<SDLTexturePtr> ammoPackTextures;
+    std::map<int, int> ammoAmounts = {{1,15}, {2,10}, {3,5}, {4,5}};
+    float ammoPackRadius = 1.0f;
 
     std::vector<Sprite> AllSpriteTextures;
     std::vector<int> renderOrder; // holds spriteIDs

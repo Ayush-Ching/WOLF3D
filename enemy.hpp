@@ -70,7 +70,7 @@ public:
     bool randomAttackChance(int);
     void think(const std::pair<float, float>& pos, float playerAngle);
     void updateCanSeePlayer(bool);
-    void takeDamage(int);
+    bool takeDamage(int);
     int computeEnemyHitChance(float dist);
     int rollEnemyDamage();
     int getDamageThisFrame() const { return damageThisFrame; }

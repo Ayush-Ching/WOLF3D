@@ -77,7 +77,7 @@ void Game::update(float deltaTime)
         e->_process(deltaTime, playerPosition, playerAngle);
 
         // Update canSeePlayer
-        bool x = rayCastEnemyToPlayer(*e);
+        bool x = rayCastEnemyToPlayer(*e, false);
         e->updateCanSeePlayer(x);
         //if(x) std::cout << "Enemy at (" << e->get_position().first << ", " << e->get_position().second << ") can see player.\n";
         int dmg = e->getDamageThisFrame();

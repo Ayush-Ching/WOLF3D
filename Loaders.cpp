@@ -93,6 +93,24 @@ void Game::loadMapDataFromFile(const char* filename)
                 row.push_back(0);
                 continue;
             }
+
+            // Handling Ammos
+            if(token == "a"){
+                int spriteID = AllSpriteTextures.size();
+                AmmoPackPositions[{1, spriteID}] = {row.size(), rowIndex};
+                AllSpriteTextures.push_back(Sprite{ spriteID, std::pair<float, float>{row.size(), rowIndex}, ammoPackTextures[0],
+                 ammoPackWidthsHeights[1].first, ammoPackWidthsHeights[1].second});
+                row.push_back(0);
+                continue;
+            }
+            else if(token == "A"){
+                int spriteID = AllSpriteTextures.size();
+                AmmoPackPositions[{2, spriteID}] = {row.size(), rowIndex};
+                AllSpriteTextures.push_back(Sprite{ spriteID, std::pair<float, float>{row.size(), rowIndex}, ammoPackTextures[1],
+                 ammoPackWidthsHeights[2].first, ammoPackWidthsHeights[2].second});
+                row.push_back(0);
+                continue;
+            }
                 
             int value = std::stoi(token);      // parses 10, 12, etc.
 
@@ -127,7 +145,7 @@ void Game::loadAllTextures(const char* filePath)
         return;
     }
 
-    enum Section { NONE, WALLS, FLOORS, CEILS, KEYS, WEAPONS, HEALTHPACKS };
+    enum Section { NONE, WALLS, FLOORS, CEILS, KEYS, WEAPONS, HEALTHPACKS, AMMOPACKS };
     Section currentSection = NONE;
 
     std::string line;
@@ -168,6 +186,10 @@ void Game::loadAllTextures(const char* filePath)
             currentSection = HEALTHPACKS;
             continue;
         }
+        if (low == "[ammopacks]"){
+            currentSection = AMMOPACKS;
+            continue;
+        }
 
         // If it’s not a section header, it must be a file path
         if (currentSection == WALLS) {
@@ -187,6 +209,9 @@ void Game::loadAllTextures(const char* filePath)
         }
         else if (currentSection == HEALTHPACKS) {
             loadHealthPackTexture(line.c_str());
+        }
+        else if (currentSection == AMMOPACKS) {
+            loadAmmoPackTexture(line.c_str());
         }
         else {
             std::cerr << "Warning: Path found outside any valid section: " << line << "\n";
@@ -327,4 +352,22 @@ void Game::loadHealthPackTexture(const char* filePath)
     int healthPackType = healthPackTextures.size() + 1;
     healthPackWidthsHeights[healthPackType] = std::make_pair(width, height);
     healthPackTextures.emplace_back(raw, SDL_DestroyTexture);
+}
+void Game::loadAmmoPackTexture(const char* filePath){
+    SDL_Texture* raw = IMG_LoadTexture(renderer.get(), filePath);
+    if (!raw) {
+        std::cerr << "Failed to load health pack texture: "
+                  << filePath << " | " << IMG_GetError() << "\n";
+        return;
+    }
+    int height = 0, width = 0;
+    if (SDL_QueryTexture(raw, nullptr, nullptr, &width, &height) != 0) {
+        std::cerr << "Failed to query texture: "
+                  << SDL_GetError() << "\n";
+        SDL_DestroyTexture(raw);
+        return;
+    }
+    int ammoPackType = ammoPackTextures.size() + 1;
+    ammoPackWidthsHeights[ammoPackType] = std::make_pair(width, height);
+    ammoPackTextures.emplace_back(raw, SDL_DestroyTexture);
 }

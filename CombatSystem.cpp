@@ -13,7 +13,7 @@ bool Game::canShootEnemy(float dist){
 }
 
 
-bool Game::rayCastEnemyToPlayer(const Enemy& enemy) {
+bool Game::rayCastEnemyToPlayer(const Enemy& enemy, bool isPlayer) {
     float ex = enemy.get_position().first;
     float ey = enemy.get_position().second;
 
@@ -22,13 +22,22 @@ bool Game::rayCastEnemyToPlayer(const Enemy& enemy) {
 
     float r = 0.1f;
 
-    std::vector<std::pair<float, float>> samplePoints={
-        std::make_pair(ex, ey),
-        std::make_pair(ex+r, ey),
-        std::make_pair(ex, ey+r),
-        std::make_pair(ex-r, ey),
-        std::make_pair(ex, ey-r)
-    };
+    std::vector<std::pair<float, float>> samplePoints;
+    
+    if(isPlayer){
+        samplePoints = {
+            std::make_pair(ex, ey),
+        };
+    }
+    else{
+        samplePoints = {
+            std::make_pair(ex, ey),
+            std::make_pair(ex+r, ey),
+            std::make_pair(ex, ey+r),
+            std::make_pair(ex-r, ey),
+            std::make_pair(ex, ey-r)
+        };
+    }
 
     for(const auto& [x, y] : samplePoints)
     {
@@ -141,4 +150,10 @@ bool Game::playerHasWeapon(int weaponType) {
         }
     }
     return false;
+}
+
+void Game::spawnRandomAmmoPack(std::pair<float, float> pos){
+    int type = 3 + (rand() % 2);
+    int spriteID = AllSpriteTextures.size();
+    AmmoPackPositions[{type, spriteID}] = pos;
 }
