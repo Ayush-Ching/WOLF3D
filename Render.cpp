@@ -144,8 +144,7 @@ void Game::render()
         // Wall Texture
         int texId = Map[mapY][mapX] - 1;
         int imgWidth = wallTextureWidths[texId], imgHeight = wallTextureHeights[texId];
-        SDL_QueryTexture(wallTextures[texId].get(), NULL, NULL, &imgWidth, &imgHeight);
-
+        
         // -------- distance-based shading --------
         float maxLightDist = 8.0f;
         float shade = 1.0f - std::min(correctedDistance / maxLightDist, 1.0f);
