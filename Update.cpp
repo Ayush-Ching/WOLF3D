@@ -170,8 +170,12 @@ void Game::update(float deltaTime)
 
     // Update health pack pickup
     for (const auto& [hpType, pos] : HealthPackPositions) {
-        if(health >= 100 || !AllSpriteTextures[healthPackTypeToSpriteID[hpType]].active)
+        if(health >= 100)
             continue;
+        if(healthPackTypeToSpriteID.find(hpType) == healthPackTypeToSpriteID.end())
+            continue;// invalid hpType, or health sprite not loaded
+        if(!AllSpriteTextures[healthPackTypeToSpriteID[hpType]].active)
+            continue; // already picked up
         auto [hx, hy] = pos;
         float healthPackX = hx + 0.5f;
         float healthPackY = hy + 0.5f;

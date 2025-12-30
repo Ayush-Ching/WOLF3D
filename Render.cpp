@@ -270,6 +270,13 @@ void Game::render()
         int centreX = ScreenHeightWidth.first / 2;
         if(sprite.isEnemy && shotThisFrame && spriteDist < weapons[currentWeapon].range){
             enemyShotIndex = enemySpriteIDToindex.at(sprite.spriteID);
+            std::cout << "Enemy at sprite ID " << sprite.spriteID << " selected for shooting.\n";
+        }
+        else if(sprite.isEnemy && shotThisFrame){ 
+            std::cout << "Enemy at sprite ID " << sprite.spriteID << " out of range for shooting,\n dist=" << spriteDist << " and range=" << weapons[currentWeapon].range << "\n";
+        }
+        else if(shotThisFrame){
+            std::cout << "Sprite ID " << sprite.spriteID << " is not an enemy.\n";
         }
 
         if (drawStartY < 0) drawStartY = 0;
@@ -295,11 +302,11 @@ void Game::render()
             playerPosition,
             enemies[enemyShotIndex]->get_position()
         );
-        dist = pow(dist, 0.5f); // sqrt
+        dist = sqrt(dist); // sqrt
         int dmg=0;
         if(canShootEnemy(dist))
             dmg = (rand() & 31) * weapons[currentWeapon].multiplier;
-        //std::cout << "Enemy at index " << enemyShotIndex << " shot for " << dmg << " damage.\n";
+        std::cout << "Enemy at index " << enemyShotIndex << " shot for " << dmg << " damage.\n";
         if (rayCastEnemyToPlayer(*enemies[enemyShotIndex])){
             enemies[enemyShotIndex]->takeDamage(dmg); 
             float relativeAngle = atan2(

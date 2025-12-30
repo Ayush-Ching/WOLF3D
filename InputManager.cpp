@@ -23,6 +23,7 @@ void Game::handleEvents()
                     shotThisFrame = true;
                     hasShot = true;
                     fireCooldown = 0.0f;
+                    std::cout << "Fired weapon " << currentWeapon << "\n";
                     if(weapons[currentWeapon].multiplier > 1){
                         weapons[currentWeapon].ammo--;
                     }

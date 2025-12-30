@@ -110,7 +110,7 @@ void Game::acquireWeapon(int weaponType) {
     }
     switch(weaponType){
         case 1:
-            weapons[1] = weapon({1, 100, 0, 2.0f, 0.0f, 0.0f, "knife"});
+            weapons[1] = weapon({1, 100, 0, 2.0f, 0.1f, 0.0f, "knife"});
             break;
         case 2:
             weapons[2] = weapon({2, 4, 30, 70.0f, 0.2f, 16.0f, "pistol"});
@@ -121,9 +121,6 @@ void Game::acquireWeapon(int weaponType) {
         default:
             std::cerr << "Unhandled weapon type: " << weaponType << "\n";
     }
-    //{1, 100, 0, true, 2.0f, 0.0f, 8.0f, "knife"},   // knife (K)
-    //{2, 4, 0, false, 70.0f, 0.2f, 16.0f, "pistol"},  // pistol (P)
-    //{3, 6, 0, false, 90.0f, 0.5f, 24.0f, "rifle"}   // rifle (S)
     currentWeapon = weaponType;
     AudioManager::playSFX("pickup", MIX_MAX_VOLUME / 2);
 }
