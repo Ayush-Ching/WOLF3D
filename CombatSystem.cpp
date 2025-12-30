@@ -20,86 +20,96 @@ bool Game::rayCastEnemyToPlayer(const Enemy& enemy) {
     float px = playerPosition.first;
     float py = playerPosition.second;
 
-    // Direction vector
-    float dx = px - ex;
-    float dy = py - ey;
+    float r = 0.1f;
 
-    float rayLength = std::hypot(dx, dy);
-    if (rayLength < 0.0001f)
-        return true;
+    std::vector<std::pair<float, float>> samplePoints={
+        std::make_pair(ex, ey),
+        std::make_pair(ex+r, ey),
+        std::make_pair(ex, ey+r),
+        std::make_pair(ex-r, ey),
+        std::make_pair(ex, ey-r)
+    };
 
-    dx /= rayLength;
-    dy /= rayLength;
+    for(const auto& [x, y] : samplePoints)
+    {
+        // Direction vector
+        float dx = px - x;
+        float dy = py - y;
 
-    // Current grid square
-    int mapX = int(std::floor(ex));
-    int mapY = int(std::floor(ey));
-
-    int targetX = int(std::floor(px));
-    int targetY = int(std::floor(py));
-
-    // Ray step direction
-    int stepX = (dx < 0) ? -1 : 1;
-    int stepY = (dy < 0) ? -1 : 1;
-
-    // Distance to first grid boundary
-    float sideDistX;
-    float sideDistY;
-
-    float deltaDistX = (dx == 0) ? 1e30f : std::abs(1.0f / dx);
-    float deltaDistY = (dy == 0) ? 1e30f : std::abs(1.0f / dy);
-
-    if (dx < 0)
-        sideDistX = (ex - mapX) * deltaDistX;
-    else
-        sideDistX = (mapX + 1.0f - ex) * deltaDistX;
-
-    if (dy < 0)
-        sideDistY = (ey - mapY) * deltaDistY;
-    else
-        sideDistY = (mapY + 1.0f - ey) * deltaDistY;
-
-    // DDA loop
-    while (true) {
-        if (sideDistX < sideDistY) {
-            sideDistX += deltaDistX;
-            mapX += stepX;
-        } else {
-            sideDistY += deltaDistY;
-            mapY += stepY;
-        }
-
-        // Bounds check
-        if (mapY < 0 || mapY >= (int)Map.size() ||
-            mapX < 0 || mapX >= (int)Map[0].size())
-        {
-        //    std::cout << "Ray out of bounds at (" << mapX << ", " << mapY << ")\n";
-            return false;
-        }
-
-        // Hit wall
-        if (Map[mapY][mapX] > 0 && !isDoor(Map[mapY][mapX])){
-        //    std::cout << "Ray blocked by wall at (" << mapX << ", " << mapY << ")\n";
-            return false;
-        }
-        else if (isDoor(Map[mapY][mapX])) {
-            auto doorIt = doors.find({mapX, mapY});
-            if (doorIt != doors.end()) {
-                Door& door = doorIt->second;
-                if (door.openAmount < 1.0f){
-                //    std::cout << "Ray blocked by closed door at (" << mapX << ", " << mapY << ")\n";
-                    return false;
-                }
-            } else {
-                //std::cout << "Ray blocked by unknown door at (" << mapX << ", " << mapY << ")\n";
-                return false;
-            }
-        }
-
-        // Reached player cell
-        if (mapX == targetX && mapY == targetY)
+        float rayLength = std::hypot(dx, dy);
+        if (rayLength < 0.0001f)
             return true;
+
+        dx /= rayLength;
+        dy /= rayLength;
+
+        // Current grid square
+        int mapX = int(std::floor(x));
+        int mapY = int(std::floor(y));
+
+        int targetX = int(std::floor(px));
+        int targetY = int(std::floor(py));
+
+        // Ray step direction
+        int stepX = (dx < 0) ? -1 : 1;
+        int stepY = (dy < 0) ? -1 : 1;
+
+        // Distance to first grid boundary
+        float sideDistX;
+        float sideDistY;
+
+        float deltaDistX = (dx == 0) ? 1e30f : std::abs(1.0f / dx);
+        float deltaDistY = (dy == 0) ? 1e30f : std::abs(1.0f / dy);
+
+        if (dx < 0)
+            sideDistX = (x - mapX) * deltaDistX;
+        else
+            sideDistX = (mapX + 1.0f - x) * deltaDistX;
+
+        if (dy < 0)
+            sideDistY = (y - mapY) * deltaDistY;
+        else
+            sideDistY = (mapY + 1.0f - y) * deltaDistY;
+
+        // DDA loop
+        while (true) {
+            if (sideDistX < sideDistY) {
+                sideDistX += deltaDistX;
+                mapX += stepX;
+            } else {
+                sideDistY += deltaDistY;
+                mapY += stepY;
+            }
+
+            // Bounds check
+            if (mapY < 0 || mapY >= (int)Map.size() ||
+                mapX < 0 || mapX >= (int)Map[0].size())
+            {
+                break;
+            }
+
+            // Hit wall
+            if (Map[mapY][mapX] > 0 && !isDoor(Map[mapY][mapX])){
+                break;
+            }
+            else if (isDoor(Map[mapY][mapX])) {
+                auto doorIt = doors.find({mapX, mapY});
+                if (doorIt != doors.end()) {
+                    Door& door = doorIt->second;
+                    if (door.openAmount < 1.0f){
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+
+            // Reached player cell
+            if (mapX == targetX && mapY == targetY)
+                return true;
+        }
     }
+    return false;
 }
 
 void Game::acquireWeapon(int weaponType) {

@@ -85,6 +85,7 @@ void Game::update(float deltaTime)
         if(x && dmg > 0){
             health -= dmg;
             if(health < 0) health = 0;
+            std::cout << "health of player : "<<health<<std::endl;
         }
         // Update Alerts
         if(shotThisFrame && currentWeapon > 1 && !e->isAlerted()){
@@ -186,6 +187,7 @@ void Game::update(float deltaTime)
             int healAmount = healAmounts[hpType];
             health += healAmount;
             if(health > 100) health = 100;
+            std::cout<<"Health : "<<health<<std::endl;
             AudioManager::playSFX("pickup", MIX_MAX_VOLUME / 2);
             // Remove health pack from map
             AllSpriteTextures[spriteID].active = false;

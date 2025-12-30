@@ -130,12 +130,12 @@ private:
 
     std::map<int, std::pair<int, int>> keysPositions, keyWidthsHeights;
     std::vector<SDLTexturePtr> keysTextures;
-    float keyRadius = 1.6f;
+    float keyRadius = 1.0f;
     std::map<int, int> keyTypeToSpriteID;
 
     std::map<int, std::pair<int, int>> weaponsPositions, weaponWidthsHeights;
     std::vector<SDLTexturePtr> weaponsTextures;
-    float weaponRadius = 1.6f;
+    float weaponRadius = 1.0f;
     std::map<int, int> weaponTypeToSpriteID;
 
     // healthPack Type and its index 
@@ -147,7 +147,7 @@ private:
     std::map<int, std::pair<int, int>> healthPackWidthsHeights;
     std::vector<SDLTexturePtr> healthPackTextures;
     std::map<int, int> healAmounts = {{1,10}, {2,25}};    
-    float healthPackRadius = 1.9f;
+    float healthPackRadius = 1.0f;
     // health packs: 1 = small (+10), 2 = large (+25)
 
     std::vector<Sprite> AllSpriteTextures;
