@@ -4,12 +4,19 @@ Game* game = nullptr;
 
 int main(int argc, char* argv[]) {
     game = new Game();
+    // Loading Enemies
     game->loadEnemies("enemies.txt");
+
+    // Initialize Game (player and enemies)
     game->init("My Game", 100, 100, 800, 600, false);
+    
+    // Load Map, Textures and Audio
     game->loadAllTextures("textureMapping.txt");
     game->loadEnemyTextures("enemyFrames.txt");
     AudioManager::loadAllAudios("audioConfig.txt");
     game->loadMapDataFromFile("testMap.txt");
+
+    // Place Player
     game->placePlayerAt(2, 2, 0.0f);
 
     const int FPS = 60;
