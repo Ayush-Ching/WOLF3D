@@ -25,12 +25,12 @@ void Game::update(float deltaTime)
         std::cout << "X out of bounds: " << mx << "\n";
         return;
     }
-    int tileX = Map[(int)playerPosition.second][(int)(newX + playerSquareSize * (newX>playerPosition.first?1:-1))];
-    int tileY = Map[(int)(newY + playerSquareSize * (newY>playerPosition.second?1:-1))][(int)playerPosition.first];
+    int tileX = Map[(int)playerPosition.second][(int)(newX + playerSquareSize/2 * (newX>playerPosition.first?1:-1))];
+    int tileY = Map[(int)(newY + playerSquareSize/2 * (newY>playerPosition.second?1:-1))][(int)playerPosition.first];
     if (tileX == 0 ||
         (isDoor(tileX) &&
         doors[{
-            (int)(newX + playerSquareSize * (newX > playerPosition.first ? 1 : -1)),
+            (int)(newX + playerSquareSize/2 * (newX > playerPosition.first ?1:-1)),
             (int)playerPosition.second
                 }]
             .openAmount > 0.5f))
@@ -44,7 +44,7 @@ void Game::update(float deltaTime)
         (isDoor(tileY) &&
         doors[{
             (int)playerPosition.first,
-            (int)(newY + playerSquareSize * (newY > playerPosition.second ? 1 : -1)),
+            (int)(newY + playerSquareSize/2 * (newY > playerPosition.second ?1:-1)),
                 }]
             .openAmount > 0.5f))
     {

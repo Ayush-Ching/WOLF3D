@@ -138,9 +138,6 @@ void Game::render()
         int drawStart = -lineHeight / 2 + ScreenHeightWidth.second / 2;
         int drawEnd   =  lineHeight / 2 + ScreenHeightWidth.second / 2;
 
-        if (drawStart < 0) drawStart = 0;
-        if (drawEnd >= ScreenHeightWidth.second) drawEnd = ScreenHeightWidth.second - 1;
-
         // Wall Texture
         int texId = Map[mapY][mapX] - 1;
         int imgWidth = wallTextureWidths[texId], imgHeight = wallTextureHeights[texId];
@@ -248,8 +245,6 @@ void Game::render()
         float dx = sx - playerPosition.first;
         float dy = sy - playerPosition.second;
         float spriteDist = sqrt(dx*dx + dy*dy);
-        if (spriteDist < playerSquareSize)
-            continue; // skip sprite if too close to player
         // Angle between player view and sprite
         float spriteAngle = atan2(dy, dx) - playerAngle;
         while (spriteAngle > PI)  spriteAngle -= 2 * PI;
@@ -288,9 +283,6 @@ void Game::render()
         else if(sprite.isEnemy && shotThisFrame){ 
             std::cout << "Enemy at sprite ID " << sprite.spriteID << " out of range for shooting,\n dist=" << spriteDist << " and range=" << weapons[currentWeapon].range << "\n";
         }
-        else if(shotThisFrame){
-            std::cout << "Sprite ID " << sprite.spriteID << " is not an enemy.\n";
-        }
 
         if(sprite.isEnemy){
 
@@ -304,11 +296,6 @@ void Game::render()
                 (int)(drawEndX - spriteWidth * (1-enemyBoundBox)/2), ScreenHeightWidth.second
             );
         }
-
-        if (drawStartY < 0) drawStartY = 0;
-        if (drawEndY >= ScreenHeightWidth.second) drawEndY = ScreenHeightWidth.second - 1;
-        if (drawStartX < 0) drawStartX = 0;
-        if (drawEndX >= ScreenHeightWidth.first) drawEndX = ScreenHeightWidth.first - 1;
 
         SDL_Texture* texture = sprite.texture.get();
 

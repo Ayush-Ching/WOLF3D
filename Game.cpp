@@ -62,7 +62,7 @@ bool Game::collidesWithEnemy(float x, float y) {
         if (e->get_isDead()) continue;
         if (aabbIntersect(
             x, y,
-            playerSquareSize, playerSquareSize,
+            playerSquareSize * 0.5f, playerSquareSize * 0.5f,
             e->get_position().first, e->get_position().second,
             e->get_size(), e->get_size()
         )) {

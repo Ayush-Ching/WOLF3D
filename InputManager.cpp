@@ -84,8 +84,8 @@ void Game::handleEvents()
     // Door interaction (Space to open/close)
     if (keystate[SDL_SCANCODE_SPACE])
     {
-        int tx = (int)(playerPosition.first  + cos(playerAngle) * playerSquareSize *1.1f);
-        int ty = (int)(playerPosition.second + sin(playerAngle) * playerSquareSize *1.1f);
+        int tx = (int)(playerPosition.first  + cos(playerAngle));
+        int ty = (int)(playerPosition.second + sin(playerAngle));
 
         auto key = std::make_pair(tx, ty);
         if (doors.count(key)) {
