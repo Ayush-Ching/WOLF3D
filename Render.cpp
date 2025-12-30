@@ -76,7 +76,7 @@ void Game::render()
             else if (isDoor(Map[mapY][mapX]))
             {
                 float open = 0.0f;
-                auto it = doors.find({mapY, mapX});
+                auto it = doors.find({mapX, mapY});
                 if (it != doors.end()) {
                     open = it->second.openAmount;
                 } else {
@@ -169,9 +169,9 @@ void Game::render()
             SDL_Rect destRect = { ray, drawStart, 1, drawEnd - drawStart };
             SDL_RenderCopy(renderer.get(), wallTextures[texId].get(), &srcRect, &destRect);
         }
-        else if (wallX > doors[{mapY, mapX}].openAmount) {
+        else if (wallX > doors[{mapX, mapY}].openAmount) {
 
-            wallX -= doors[{mapY, mapX}].openAmount;
+            wallX -= doors[{mapX, mapY}].openAmount;
             int texX = (int)(wallX * imgWidth);
             if(hitSide == 0 && rayDirX > 0) texX = imgWidth - texX - 1;
             if(hitSide == 1 && rayDirY < 0) texX = imgWidth - texX - 1;

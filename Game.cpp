@@ -1,6 +1,14 @@
 #include "Game.hpp"
 #include <iostream>
 
+Game::Game(){
+
+}
+
+Game::~Game(){
+    clean();
+}
+
 bool aabbIntersect(
     float ax, float ay, float aw, float ah,
     float bx, float by, float bw, float bh
@@ -51,6 +59,7 @@ void Game::clean()
 bool Game::collidesWithEnemy(float x, float y) {
     for (const auto& e : enemies)
     {
+        if (e->get_isDead()) continue;
         if (aabbIntersect(
             x, y,
             playerSquareSize, playerSquareSize,
@@ -77,9 +86,8 @@ bool Game::canMoveTo(float x, float y) {
         return false;
     }
 
-    int tileX = Map[(int)y][(int)(x + playerSquareSize * (x>playerPosition.first?1:-1))];
-    int tileY = Map[(int)(y + playerSquareSize * (y>playerPosition.second?1:-1))][(int)x];
-
+    int tileX = Map[(int)y][(int)x];
+    int tileY = Map[(int)y][(int)x];
     // Check for walls
     if (tileX != 0 || tileY != 0) {
         return false;
@@ -91,7 +99,7 @@ bool Game::canMoveTo(float x, float y) {
     auto doorIt = doors.find({mapX, mapY});
     if (doorIt != doors.end()) {
         Door& door = doorIt->second;
-        if (door.locked && !playerHasKey(door.keyType)) {
+        if (door.openAmount < 1.0f) {
             return false;
         }
     }

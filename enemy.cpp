@@ -194,6 +194,7 @@ void Enemy::walkTo(float x, float y){ // for testing purposes
 void Enemy::think(const std::pair<float, float>& playerPosition, float playerAngle){
     if(stateLocked)
         return;
+    //std::cout << "current state: "<< state << "\n";
     if(health <= 0 && !isDead){
         setAnimState(ENEMY_DEAD, true);
         AudioManager::playSpatialSFX(

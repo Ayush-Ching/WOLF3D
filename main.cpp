@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
         game->handleEvents();
         game->update(deltaTime);   
         game->render();
-
+        
         // Frame Limiter 
         Uint32 frameTime = SDL_GetTicks() - frameStart;
         

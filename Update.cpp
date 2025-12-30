@@ -29,8 +29,10 @@ void Game::update(float deltaTime)
     int tileY = Map[(int)(newY + playerSquareSize * (newY>playerPosition.second?1:-1))][(int)playerPosition.first];
     if (tileX == 0 ||
         (isDoor(tileX) &&
-        doors[{(int)playerPosition.second,
-                (int)(newX + playerSquareSize * (newX > playerPosition.first ? 1 : -1))}]
+        doors[{
+            (int)(newX + playerSquareSize * (newX > playerPosition.first ? 1 : -1)),
+            (int)playerPosition.second
+                }]
             .openAmount > 0.5f))
     {
         if (!collidesWithEnemy(newX, playerPosition.second)) {
@@ -40,8 +42,10 @@ void Game::update(float deltaTime)
 
     if (tileY == 0 ||
         (isDoor(tileY) &&
-        doors[{(int)(newY + playerSquareSize * (newY > playerPosition.second ? 1 : -1)),
-                (int)playerPosition.first}]
+        doors[{
+            (int)playerPosition.first,
+            (int)(newY + playerSquareSize * (newY > playerPosition.second ? 1 : -1)),
+                }]
             .openAmount > 0.5f))
     {
         if (!collidesWithEnemy(playerPosition.first, newY)) {
@@ -75,6 +79,7 @@ void Game::update(float deltaTime)
         // Update canSeePlayer
         bool x = rayCastEnemyToPlayer(*e);
         e->updateCanSeePlayer(x);
+        if(x) std::cout << "Enemy at (" << e->get_position().first << ", " << e->get_position().second << ") can see player.\n";
         int dmg = e->getDamageThisFrame();
         e->clearDamageThisFrame();
         if(x && dmg > 0){

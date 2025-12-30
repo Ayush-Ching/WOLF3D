@@ -75,6 +75,23 @@ void Game::loadMapDataFromFile(const char* filename)
                 continue;
             }
             
+            // Health Pack handling
+            if(token == "h"){
+                HealthPackPositions[1] = {row.size(), rowIndex};
+                healthPackTypeToSpriteID[1] = AllSpriteTextures.size();
+                AllSpriteTextures.push_back(Sprite{ static_cast<int>(AllSpriteTextures.size()), std::pair<float, float>{row.size(), rowIndex}, healthPackTextures[0],
+                 healthPackWidthsHeights[1].first, healthPackWidthsHeights[1].second});
+                row.push_back(0);
+                continue;
+            }
+            else if(token == "H"){
+                HealthPackPositions[2] = {row.size(), rowIndex};
+                healthPackTypeToSpriteID[2] = AllSpriteTextures.size();
+                AllSpriteTextures.push_back(Sprite{ static_cast<int>(AllSpriteTextures.size()), std::pair<float, float>{row.size(), rowIndex}, healthPackTextures[1],
+                 healthPackWidthsHeights[2].first, healthPackWidthsHeights[2].second});
+                row.push_back(0);
+                continue;
+            }
                 
             int value = std::stoi(token);      // parses 10, 12, etc.
 
@@ -89,7 +106,7 @@ void Game::loadMapDataFromFile(const char* filename)
                 if (value == 8) { d.locked = true;  d.keyType = 2; }
                 if (value == 9) { d.locked = true;  d.keyType = 3; }
 
-                doors[{ rowIndex, row.size() }] = d;
+                doors[{ row.size(), rowIndex }] = d;
             }
 
             row.push_back(value);

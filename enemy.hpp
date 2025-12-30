@@ -80,4 +80,5 @@ public:
     std::pair<float, float> askGameToMove(float deltaTime);
     void cancelWalkThisFrame() { canWalkThisFrame = false; }
     void allowWalkNextFrame() { canWalkThisFrame = true; }
+    bool get_isDead() const { return isDead; }
 };

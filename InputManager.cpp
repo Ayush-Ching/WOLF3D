@@ -86,14 +86,15 @@ void Game::handleEvents()
         int tx = (int)(playerPosition.first  + cos(playerAngle) * playerSquareSize *1.1f);
         int ty = (int)(playerPosition.second + sin(playerAngle) * playerSquareSize *1.1f);
 
-        auto key = std::make_pair(ty, tx);
+        auto key = std::make_pair(tx, ty);
         if (doors.count(key)) {
             Door& d = doors[key];
 
             if (d.locked && !playerHasKey(d.keyType))
-                return;
-
-            if (d.openAmount == 0.0f){
+            {   // Do nothing
+                std::cout << "Door is locked! Need key type: " << d.keyType << "\n";
+            }
+            else if (d.openAmount == 0.0f){
                 AudioManager::playSFX("door_open", MIX_MAX_VOLUME);
                 d.opening = true;
             }
