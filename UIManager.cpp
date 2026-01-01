@@ -1,6 +1,5 @@
 #include "UIManager.hpp"
 #include <fstream>
-#include <sstream>
 // ---- Static member definitions ----
 
 WeaponType UIManager::currentWeapon = WeaponType::None;
@@ -28,11 +27,11 @@ int UIManager::panelBorderThickness = 1;
 SDL_Color UIManager::panelFillColor = {0, 0, 165 ,255};
 SDL_Color UIManager::panelBorderColor = {255, 255, 255 ,255};
 std::map<HUDSections, int> UIManager::panelSectionWidths = {
-    {HUDSections::WEAPON, 120}, 
+    {HUDSections::WEAPON, 192}, 
     {HUDSections::AMMO, 88}, 
-    {HUDSections::AVATAR, 184}, 
+    {HUDSections::AVATAR, 240}, 
     {HUDSections::HEALTH, 132}, 
-    {HUDSections::KEYS, 76} 
+    {HUDSections::KEYS, 148} 
 };
 
 std::map<WeaponType, SDLTexturePtr> UIManager::panelWeaponImage={};
@@ -184,6 +183,54 @@ void UIManager::renderHUD(SDL_Renderer& rend, const std::pair<int,int>& screenSi
 
     // Rendering Datas on Panel
     renderPanelWeaponImage(rend, screenSize);
+
+    // AMMO AND HEALTH TEXT
+    SDL_Color clr = {153, 159, 253, 255};
+    int ax = 0, hx=0, y = 0, i = 0, j = (int) HUDSections::HEALTH;
+    while(i<j){
+        if(i == (int) HUDSections::AMMO)
+            ax = hx;
+        hx += panelSectionWidths[static_cast<HUDSections>(i)];
+        i++;
+    }
+    y = screenSize.second - panelHeight;
+    drawFilledRectWithBorder(rend,
+        {ax, y, panelSectionWidths[HUDSections::AMMO], panelHeight},
+        panelFillColor, panelBorderColor, panelBorderThickness
+    );
+    renderText(rend, "AMMO", ax, y, 1, clr);
+
+    drawFilledRectWithBorder(rend,
+        {hx, y, panelSectionWidths[HUDSections::HEALTH], panelHeight},
+        panelFillColor, panelBorderColor, panelBorderThickness
+    );
+    renderText(rend, "HEALTH", hx, y, 1, clr);
+    
+    // AMMO AND HEALTH VALUE
+    y += font.glyphH;
+    int scale = (panelHeight - font.glyphH)/font.glyphH ; //size
+    // centering Y
+    y = (y + screenSize.second) / 2 - scale * font.glyphH / 2;
+
+    // WRITING AMMOS
+    std::string txt; int width, x = 0;
+    //std::cout<<ammo.count(currentWeapon)<<"\n";
+    if(ammo.count(currentWeapon)){
+        txt = std::to_string(ammo[currentWeapon]);
+        width = txt.size() * font.glyphW * scale;
+        // centering X
+        x = ax + panelSectionWidths[HUDSections::AMMO] / 2;
+        x -= width / 2;
+        renderText(rend, txt, x, y, scale, clr);
+    }
+
+    // WRITING HEALTH
+    txt = std::to_string(health);
+    width = txt.size() * font.glyphW * scale;
+    // centering X
+    x = hx + panelSectionWidths[HUDSections::HEALTH] / 2;
+    x -= width / 2;
+    renderText(rend, txt, x, y, scale, clr);
 
 }
 

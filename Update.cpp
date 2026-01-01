@@ -243,14 +243,16 @@ void Game::update(float deltaTime)
         UIManager::setWeapon(WeaponType::Knife);
         weaponChangedThisFrame = false;
     }
-    else if(currentWeapon == 2 && weaponChangedThisFrame){
+    else if(currentWeapon == 2){
         UIManager::setAmmo('P', weapons[currentWeapon].ammo);
-        UIManager::setWeapon(WeaponType::Pistol);
+        if(weaponChangedThisFrame)
+            UIManager::setWeapon(WeaponType::Pistol);
         weaponChangedThisFrame = false;
     }
-    else if(currentWeapon == 3 && weaponChangedThisFrame){
+    else if(currentWeapon == 3){
         UIManager::setAmmo('S', weapons[currentWeapon].ammo);
-        UIManager::setWeapon(WeaponType::Rifle);
+        if(weaponChangedThisFrame)
+            UIManager::setWeapon(WeaponType::Rifle);
         weaponChangedThisFrame = false;
     }
     if(shotThisFrame){
