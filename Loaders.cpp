@@ -171,7 +171,7 @@ void Game::loadAllTextures(const char* filePath)
         return;
     }
 
-    enum Section { NONE, WALLS, KEYS, WEAPONS, HEALTHPACKS, AMMOPACKS };
+    enum Section { NONE, WALLS, KEYS, WEAPONS, HEALTHPACKS, AMMOPACKS, DOORFRAME };
     Section currentSection = NONE;
 
     std::string line;
@@ -208,6 +208,10 @@ void Game::loadAllTextures(const char* filePath)
             currentSection = AMMOPACKS;
             continue;
         }
+        if (low == "[doorframe]"){
+            currentSection = DOORFRAME;
+            continue;
+        }
 
         // If it’s not a section header, it must be a file path
         if (currentSection == WALLS) {
@@ -224,6 +228,9 @@ void Game::loadAllTextures(const char* filePath)
         }
         else if (currentSection == AMMOPACKS) {
             loadAmmoPackTexture(line.c_str());
+        }
+        else if (currentSection == DOORFRAME){
+            loadDoorFrame(line.c_str());
         }
         else {
             std::cerr << "Warning: Path found outside any valid section: " << line << "\n";
@@ -453,4 +460,27 @@ void Game::loadDecorationTextures(const char* filePath)
     }
 
     std::cout << "Decoration textures loaded successfully\n";
+}
+void Game::loadDoorFrame(const char* filePath)
+{
+    SDL_Texture* raw = IMG_LoadTexture(renderer.get(), filePath);
+    if (!raw) {
+        std::cerr << "Failed to load Door frame texture: "
+                  << filePath << " | " << IMG_GetError() << "\n";
+        return;
+    }
+
+    int width = 0, height = 0;
+    if (SDL_QueryTexture(raw, nullptr, nullptr, &width, &height) != 0) {
+        std::cerr << "Failed to query texture: "
+                  << SDL_GetError() << "\n";
+        SDL_DestroyTexture(raw);
+        return;
+    }
+
+    // Wrap with shared_ptr + SDL_DestroyTexture deleter
+    DOOR_FRAME = SDLTexturePtr(raw, SDL_DestroyTexture);
+
+    // store dimensions
+    doorFrameWidthHeight  = std::make_pair(width, height);
 }

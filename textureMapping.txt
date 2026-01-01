@@ -31,3 +31,6 @@ Textures/Collectibles/0ammo2.png
 Textures/Collectibles/0ammo3.png
 Textures/Collectibles/0ammo1.png
 Textures/Collectibles/0ammo1.png
+
+[Doorframe]
+Textures/Walls/DOOR.png

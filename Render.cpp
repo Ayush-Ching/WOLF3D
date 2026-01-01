@@ -53,12 +53,13 @@ void Game::render()
             sideDistY = (mapY + 1.0f - playerPosition.second) * deltaDistY;
         }
 
-        bool hitWall = false;
+        bool hitWall = false, doorSide = false;
         int hitSide = 0; // 0 = vertical hit, 1 = horizontal hit
         int MapWidth = Map[0].size();
         int MapHeight= Map.size();
         while (!hitWall)
         {
+            doorSide = isDoor(Map[mapY][mapX]);
             // Jump to next grid square
             if (sideDistX < sideDistY) {
                 sideDistX += deltaDistX;
@@ -69,7 +70,6 @@ void Game::render()
                 mapY += stepY;
                 hitSide = 1;
             }
-
             // Check if the ray hit a wall
             if (mapX < 0 || mapX >= MapWidth ||
                 mapY < 0 || mapY >= MapHeight) {
@@ -160,7 +160,11 @@ void Game::render()
         if (hitSide == 1) {
             brightness = (Uint8)(brightness * 0.7f);
         }
-        SDL_SetTextureColorMod(wallTextures[texId].get(),
+        if(doorSide)
+            SDL_SetTextureColorMod(DOOR_FRAME.get(),
+                            brightness, brightness, brightness);
+        else
+            SDL_SetTextureColorMod(wallTextures[texId].get(),
                             brightness, brightness, brightness);
         // --------------------------------------
 
@@ -172,7 +176,12 @@ void Game::render()
 
             SDL_Rect srcRect  = { texX, 0, 1, imgHeight };
             SDL_Rect destRect = { ray, drawStart, 1, drawEnd - drawStart };
-            SDL_RenderCopy(renderer.get(), wallTextures[texId].get(), &srcRect, &destRect);
+            if(doorSide)
+                SDL_RenderCopy(renderer.get(), 
+                DOOR_FRAME.get(), &srcRect, &destRect);
+            else
+                SDL_RenderCopy(renderer.get(), 
+                wallTextures[texId].get(), &srcRect, &destRect);
         }
         else if (wallX > doors[{mapX, mapY}].openAmount) {
 

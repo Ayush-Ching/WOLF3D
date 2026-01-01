@@ -77,7 +77,7 @@ public:
     void spawnRandomAmmoPack(std::pair<int, int>);
     void addDecorationTexture(char x, const char* filePath);
     void loadDecorationTextures(const char* filePath);
-
+    void loadDoorFrame(const char* filePath);
     SDL_Renderer& getRenderer();
     const SDL_Renderer& getRenderer() const;
 
@@ -104,7 +104,10 @@ private:
         bool locked;        // requires key?
         int keyType;        // 0 = none, 1 = blue, 2 = red, 3 = gold
     };
-
+    float DOOR_FRAME_SIZE = 0.125f; // 1/8
+    float DOOR_SLAB_SIZE  = 0.75f; float doorHitT;
+    SDLTexturePtr DOOR_FRAME{nullptr, SDL_DestroyTexture};
+    std::pair<int, int> doorFrameWidthHeight;
     std::map<std::pair<int,int>, Door> doors;  // key: (mapX,mapY)
     std::vector<int> keysHeld; // keys the player has collected
     std::vector<std::unique_ptr<Enemy>> enemies;
