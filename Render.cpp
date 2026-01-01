@@ -53,7 +53,7 @@ void Game::render()
             sideDistY = (mapY + 1.0f - playerPosition.second) * deltaDistY;
         }
 
-        bool hitWall = false, doorSide = false;
+        bool hitWall = false, doorSide = false, wallISDoor=false;
         int hitSide = 0; // 0 = vertical hit, 1 = horizontal hit
         int MapWidth = Map[0].size();
         int MapHeight= Map.size();
@@ -82,6 +82,14 @@ void Game::render()
             }
             else if (isDoor(Map[mapY][mapX]))
             {
+                if(
+                (hitSide == 0 && (sideDistY < sideDistX - deltaDistX/2))||
+                (hitSide == 1 && (sideDistX < sideDistY - deltaDistY/2))
+                )
+                {
+                    hitWall = false;
+                    continue;
+                }
                 float open = 0.0f;
                 auto it = doors.find({mapX, mapY});
                 if (it != doors.end()) {
@@ -90,10 +98,9 @@ void Game::render()
                     std::cout << "Door at "<<mapY<<", "<<mapX<<" not found\n";
                     return;
                 }
-                
                 // --- compute hit distance ---
-                float hitDist = (hitSide == 0 ? sideDistX - deltaDistX
-                                            : sideDistY - deltaDistY);
+                float hitDist = (hitSide == 0 ? sideDistX - deltaDistX/2
+                                            : sideDistY - deltaDistY/2);
 
                 // exact float hit position
                 float hitX = playerPosition.first  + rayDirX * hitDist;
@@ -114,12 +121,11 @@ void Game::render()
                     blocks = (localX >= open);
                 }
 
-                if (blocks)
+                if (blocks){
                     hitWall = true;      // ray stops here
-                else
-                    hitWall = false;     // ray passes through (door is open)
+                    wallISDoor = true;
+                }
             }
-
         }
 
         // Distance to wall = distance to side where hit happened
@@ -128,7 +134,8 @@ void Game::render()
             distanceToWall = sideDistX - deltaDistX;
         else
             distanceToWall = sideDistY - deltaDistY;
-
+        if (wallISDoor)
+            distanceToWall += (hitSide==0)? deltaDistX/2: deltaDistY/2;
         float hitX = playerPosition.first  + rayDirX * distanceToWall;
         float hitY = playerPosition.second + rayDirY * distanceToWall;
         float wallX;
