@@ -21,3 +21,8 @@ Textures/WeaponUI/rifle-4.png
 
 [Font]
 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ:?,-./!%'() Textures/Font/charset.png
+
+[Weapon]
+Textures/WeaponUI/0knife.png
+Textures/WeaponUI/0pist.png
+Textures/WeaponUI/0rifle.png

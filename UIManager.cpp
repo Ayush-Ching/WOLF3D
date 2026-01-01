@@ -21,6 +21,21 @@ std::map<WeaponType, UIAnimation> UIManager::weaponAnimations = {
 };
 
 BitmapFont UIManager::font;
+SDL_Rect UIManager::panel = { 0, 0, 0, 0 };
+
+int UIManager::panelHeight = 100;
+int UIManager::panelBorderThickness = 1;
+SDL_Color UIManager::panelFillColor = {0, 0, 165 ,255};
+SDL_Color UIManager::panelBorderColor = {255, 255, 255 ,255};
+std::map<HUDSections, int> UIManager::panelSectionWidths = {
+    {HUDSections::WEAPON, 120}, 
+    {HUDSections::AMMO, 88}, 
+    {HUDSections::AVATAR, 184}, 
+    {HUDSections::HEALTH, 132}, 
+    {HUDSections::KEYS, 76} 
+};
+
+std::map<WeaponType, SDLTexturePtr> UIManager::panelWeaponImage={};
 
 static const char* weaponTypeToString(WeaponType w)
 {
@@ -40,7 +55,7 @@ void UIManager::loadTextures(const char* filePath, SDL_Renderer& rend){
         return;
     }
 
-    enum Section { NONE, KNIFE, PISTOL, RIFLE, FONT};
+    enum Section { NONE, KNIFE, PISTOL, RIFLE, FONT, WEAPONPANEL};
     Section currentSection = NONE;
 
     std::string line;
@@ -73,6 +88,10 @@ void UIManager::loadTextures(const char* filePath, SDL_Renderer& rend){
             currentSection = FONT;
             continue;
         }
+        if (low == "[weapon]"){
+            currentSection = WEAPONPANEL;
+            continue;
+        }
 
         // If it’s not a section header, it must be a file path
         if (currentSection == KNIFE) {
@@ -87,6 +106,10 @@ void UIManager::loadTextures(const char* filePath, SDL_Renderer& rend){
         else if (currentSection == FONT) {
             // Load and use only one FONT Everywhere
             loadFont(line.c_str(), rend);
+        }
+        else if (currentSection == WEAPONPANEL){
+            addPanelTexture(static_cast<WeaponType>(panelWeaponImage.size()+1)
+            , line.c_str(), rend);
         }
         else {
             std::cerr << "Warning: Path found outside any valid section: " << line << "\n";
@@ -154,9 +177,13 @@ void UIManager::setAmmo(const char weaponChar, int num){
 void UIManager::setHealth(int hp){health = hp;}
 
 void UIManager::renderHUD(SDL_Renderer& rend, const std::pair<int,int>& screenSize) {
-    renderWeapon(rend, screenSize, 50);
+    panel = {0, screenSize.second - panelHeight, screenSize.first, panelHeight};
+    drawFilledRectWithBorder(rend, panel, panelFillColor, panelBorderColor, panelBorderThickness);
+    renderWeapon(rend, screenSize, panelHeight);
+
+    // Rendering Datas on Panel
     
-    renderText(rend, "HELLO", 0, 0, 1, SDL_Color{255, 0, 0, 255});
+
 }
 
 void UIManager::renderWeapon(SDL_Renderer& rend, const std::pair<int,int>& screenSize, int yOffset){
@@ -171,7 +198,7 @@ void UIManager::renderWeapon(SDL_Renderer& rend, const std::pair<int,int>& scree
         int destY = screenHeight - scaledSize; // bottom
 
         SDL_Rect srcRect {0, 0, imgSize, imgSize};
-        SDL_Rect destRect {destX, destY - yOffset, scaledSize, scaledSize - yOffset};
+        SDL_Rect destRect {destX, destY - yOffset, scaledSize, scaledSize};
 
         SDL_RenderCopy(&rend, anim.frames[currentFrame].get(), &srcRect, &destRect);
     }
@@ -278,3 +305,80 @@ void UIManager::loadFont(const char* charsetAndFilePath, SDL_Renderer& renderer)
               << glyphW << "x" << glyphH << ")\n";
 }
 
+// UI Helper
+void drawFilledRectWithBorder(
+    SDL_Renderer& renderer,
+    const SDL_Rect& rect,
+    SDL_Color fillColor,
+    SDL_Color borderColor,
+    int borderThickness
+) {
+    // Clamp border thickness
+    if (borderThickness < 0) borderThickness = 0;
+    if (borderThickness * 2 > rect.w) borderThickness = rect.w / 2;
+    if (borderThickness * 2 > rect.h) borderThickness = rect.h / 2;
+
+    // ---------- Fill ----------
+    SDL_SetRenderDrawColor(&renderer,
+                           fillColor.r, fillColor.g,
+                           fillColor.b, fillColor.a);
+    SDL_RenderFillRect(&renderer, &rect);
+
+    if (borderThickness == 0) return;
+
+    // ---------- Border ----------
+    SDL_SetRenderDrawColor(&renderer,
+                           borderColor.r, borderColor.g,
+                           borderColor.b, borderColor.a);
+
+    // Top
+    SDL_Rect top = {
+        rect.x,
+        rect.y,
+        rect.w,
+        borderThickness
+    };
+
+    // Bottom
+    SDL_Rect bottom = {
+        rect.x,
+        rect.y + rect.h - borderThickness,
+        rect.w,
+        borderThickness
+    };
+
+    // Left
+    SDL_Rect left = {
+        rect.x,
+        rect.y + borderThickness,
+        borderThickness,
+        rect.h - 2 * borderThickness
+    };
+
+    // Right
+    SDL_Rect right = {
+        rect.x + rect.w - borderThickness,
+        rect.y + borderThickness,
+        borderThickness,
+        rect.h - 2 * borderThickness
+    };
+
+    SDL_RenderFillRect(&renderer, &top);
+    SDL_RenderFillRect(&renderer, &bottom);
+    SDL_RenderFillRect(&renderer, &left);
+    SDL_RenderFillRect(&renderer, &right);
+}
+
+void UIManager::addPanelTexture(WeaponType weapon, const char* filePath, SDL_Renderer& renderer){
+    SDL_Texture* raw = IMG_LoadTexture(&renderer, filePath);
+    if (!raw) {
+        std::cerr << "Failed to load Weapon Panel texture: "
+                  << filePath << " | " << IMG_GetError() << "\n";
+        return;
+    }
+
+    panelWeaponImage.emplace(
+        weapon,
+        SDLTexturePtr(raw, SDL_DestroyTexture)
+    );
+}

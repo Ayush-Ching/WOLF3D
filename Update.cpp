@@ -213,8 +213,15 @@ void Game::update(float deltaTime)
         float dy = y - playerPosition.second;
         float distanceSq = dx * dx + dy * dy;
         if(distanceSq < ammoPackRadius * ammoPackRadius){
+            if(weapons[weaponType].ammo >= weapons[weaponType].maxAmmo){
+                weapons[weaponType].ammo = weapons[weaponType].maxAmmo;
+                continue;
+            }
             int amt = ammoAmounts[Type];
             weapons[weaponType].ammo += amt;
+            if(weapons[weaponType].ammo >= weapons[weaponType].maxAmmo){
+                weapons[weaponType].ammo = weapons[weaponType].maxAmmo;
+            }
             std::cout<<"Ammo of weapon num "<<weaponType<<" = "<<weapons[weaponType].ammo<<std::endl;
             AudioManager::playSFX("pickup", MIX_MAX_VOLUME / 2);
             // Remove health pack from map

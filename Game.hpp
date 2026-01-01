@@ -119,7 +119,7 @@ private:
     struct weapon {
         int multiplier; // damage multiplier
         int accuracy;   // higher is better (1=never hit, 2=50%, 3=66%, etc)
-        int ammo;
+        int ammo; int maxAmmo;
         float range; // >90 for infinite (map size)
         float coolDownTime;
         float alertRadius;

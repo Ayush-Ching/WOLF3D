@@ -11,6 +11,14 @@ enum class WeaponType {
     Rifle
 };
 
+enum class HUDSections {
+    WEAPON,
+    AMMO,
+    AVATAR,
+    HEALTH,
+    KEYS
+};
+
 struct UIAnimation {
     std::vector<SDLTexturePtr> frames;
     int width = 64;
@@ -24,6 +32,14 @@ struct BitmapFont {
     std::string charset;
 };
 
+void drawFilledRectWithBorder(
+    SDL_Renderer& renderer,
+    const SDL_Rect& rect,
+    SDL_Color fillColor,
+    SDL_Color borderColor,
+    int borderThickness
+);
+
 class UIManager {
 public:
     static void loadTextures(const char* filePath, SDL_Renderer& r);
@@ -31,7 +47,7 @@ public:
     static int getGlyphIndex(char c);
 
     static void update(float deltaTime);
-    
+
     static void renderHUD(
         SDL_Renderer& rend, 
         const std::pair<int, int>& WH);
@@ -57,6 +73,8 @@ public:
     static void animateOneShot();
     static void addTexture(WeaponType weapon, const char* filePath, SDL_Renderer& rend);
 
+    static void addPanelTexture(WeaponType weapon, const char* filePath, SDL_Renderer& rend);
+
 private:
     static WeaponType currentWeapon;
     static std::map<WeaponType, int> ammo;
@@ -67,7 +85,13 @@ private:
     static float weaponAnimTimer;
     static int currentFrame;
     static bool animating;
-    static const int IDLE_FRAME = 1;
+    static const int IDLE_FRAME = 0;
 
     static BitmapFont font;
+    static SDL_Rect panel;
+    static int panelHeight, panelBorderThickness;
+    static SDL_Color panelFillColor, panelBorderColor;
+    static std::map<HUDSections, int> panelSectionWidths;
+
+    static std::map<WeaponType, SDLTexturePtr> panelWeaponImage;
 };
