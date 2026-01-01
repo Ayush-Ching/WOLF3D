@@ -3,6 +3,7 @@
 // ---- Static member definitions ----
 
 WeaponType UIManager::currentWeapon = WeaponType::None;
+std::vector<KeyType> UIManager::keysHeld = {};
 std::map<WeaponType, int> UIManager::ammo = {
     { WeaponType::Pistol, 0 },
     { WeaponType::Rifle,  0 }
@@ -37,6 +38,9 @@ std::map<HUDSections, int> UIManager::panelSectionWidths = {
 std::map<WeaponType, SDLTexturePtr> UIManager::panelWeaponImage={};
 std::map<WeaponType, std::pair<int, int>> UIManager::panelWeaponImageWH={};
 
+std::map<KeyType, SDLTexturePtr> UIManager::keyUITextures={};
+std::map<KeyType, std::pair<int, int>> UIManager::keyUITexturesWH={};
+
 static const char* weaponTypeToString(WeaponType w)
 {
     switch (w) {
@@ -55,7 +59,7 @@ void UIManager::loadTextures(const char* filePath, SDL_Renderer& rend){
         return;
     }
 
-    enum Section { NONE, KNIFE, PISTOL, RIFLE, FONT, WEAPONPANEL};
+    enum Section { NONE, KNIFE, PISTOL, RIFLE, FONT, WEAPONPANEL, KEYS};
     Section currentSection = NONE;
 
     std::string line;
@@ -92,6 +96,10 @@ void UIManager::loadTextures(const char* filePath, SDL_Renderer& rend){
             currentSection = WEAPONPANEL;
             continue;
         }
+        if (low == "[keys]"){
+            currentSection = KEYS;
+            continue;
+        }
 
         // If it’s not a section header, it must be a file path
         if (currentSection == KNIFE) {
@@ -108,13 +116,18 @@ void UIManager::loadTextures(const char* filePath, SDL_Renderer& rend){
             loadFont(line.c_str(), rend);
         }
         else if (currentSection == WEAPONPANEL){
-            addPanelTexture(static_cast<WeaponType>(panelWeaponImage.size()+1)
+            addPanelTextureW(static_cast<WeaponType>(panelWeaponImage.size()+1)
+            , line.c_str(), rend);
+        }
+        else if (currentSection == KEYS){
+            addPanelTextureK(static_cast<KeyType>(keyUITextures.size())
             , line.c_str(), rend);
         }
         else {
             std::cerr << "Warning: Path found outside any valid section: " << line << "\n";
         }
     }
+    std::cout<<"ALL HUD TEXTURES LOADED\n";
 }
 
 void UIManager::addTexture(WeaponType weapon, const char* filePath, SDL_Renderer& renderer){
@@ -176,6 +189,12 @@ void UIManager::setAmmo(const char weaponChar, int num){
 }
 void UIManager::setHealth(int hp){health = hp;}
 
+void UIManager::addKey(KeyType key){
+    if(std::count(keysHeld.begin(), keysHeld.end(), key))
+        return;
+    keysHeld.push_back(key);
+}
+
 void UIManager::renderHUD(SDL_Renderer& rend, const std::pair<int,int>& screenSize) {
     panel = {0, screenSize.second - panelHeight, screenSize.first, panelHeight};
     drawFilledRectWithBorder(rend, panel, panelFillColor, panelBorderColor, panelBorderThickness);
@@ -231,6 +250,50 @@ void UIManager::renderHUD(SDL_Renderer& rend, const std::pair<int,int>& screenSi
     x = hx + panelSectionWidths[HUDSections::HEALTH] / 2;
     x -= width / 2;
     renderText(rend, txt, x, y, scale, clr);
+
+    // rendering keys
+    renderKeys(rend, screenSize);
+}
+
+void UIManager::renderKeys(
+    SDL_Renderer& rend, 
+    const std::pair<int,int>& screenSize)
+{
+    int y = screenSize.second - panelHeight, h = panelHeight / 3;
+    int x = 0, w = panelSectionWidths[HUDSections::KEYS];
+    int i=0, j = (int) HUDSections::KEYS;
+    while(i<j){
+        x += panelSectionWidths[static_cast<HUDSections>(i)];
+        i++;
+    }
+
+    for (KeyType key : keysHeld) {
+        int newY = y + ((int)key) * h;
+
+        // Original texture size
+        auto [texW, texH] = keyUITexturesWH[key];
+        
+        // Compute scale to fit inside w x h (no aspect ratio change)
+        float scaleX = static_cast<float>(w) / texW;
+        float scaleY = static_cast<float>(h) / texH;
+        float scale  = std::min(scaleX, scaleY);
+        
+        int dstW = static_cast<int>(texW * scale);
+        int dstH = static_cast<int>(texH * scale);
+
+        // Center horizontally (and vertically within the box)
+        int dstX = x + (w - dstW) / 2;
+        int dstY = newY + (h - dstH) / 2;
+
+        SDL_Rect dstRect { dstX, dstY, dstW, dstH };
+
+        SDL_RenderCopy(
+            &rend,
+            keyUITextures[key].get(), 
+            nullptr,
+            &dstRect
+        );
+        }
 
 }
 
@@ -473,7 +536,7 @@ void drawFilledRectWithBorder(
     SDL_RenderFillRect(&renderer, &right);
 }
 
-void UIManager::addPanelTexture(WeaponType weapon, const char* filePath, SDL_Renderer& renderer){
+void UIManager::addPanelTextureW(WeaponType weapon, const char* filePath, SDL_Renderer& renderer){
     SDL_Texture* raw = IMG_LoadTexture(&renderer, filePath);
     if (!raw) {
         std::cerr << "Failed to load Weapon Panel texture: "
@@ -493,4 +556,28 @@ void UIManager::addPanelTexture(WeaponType weapon, const char* filePath, SDL_Ren
     }
 
     panelWeaponImageWH[weapon] = std::make_pair(width, height);
+}
+
+void UIManager::addPanelTextureK(KeyType key, 
+    const char* filePath, SDL_Renderer& renderer)
+{
+    SDL_Texture* raw = IMG_LoadTexture(&renderer, filePath);
+    if (!raw) {
+        std::cerr << "Failed to load Key Panel texture: "
+                  << filePath << " | " << IMG_GetError() << "\n";
+        return;
+    }
+
+    keyUITextures.emplace(
+        key,
+        SDLTexturePtr(raw, SDL_DestroyTexture)
+    );
+    int width = 0, height = 0;
+    if (SDL_QueryTexture(raw, nullptr, nullptr, &width, &height) != 0) {
+        std::cerr << "Failed to query texture: "
+                  << SDL_GetError() << "\n";
+        return;
+    }
+
+    keyUITexturesWH[key] = std::make_pair(width, height);
 }

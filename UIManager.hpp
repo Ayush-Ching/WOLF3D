@@ -11,6 +11,12 @@ enum class WeaponType {
     Rifle
 };
 
+enum class KeyType{
+    GOLD,
+    RED,
+    BLUE
+};
+
 enum class HUDSections {
     WEAPON,
     AMMO,
@@ -57,6 +63,11 @@ public:
         const std::pair<int,int>& screenSize, 
         int yOffset);
 
+    static void renderKeys(
+        SDL_Renderer& rend, 
+        const std::pair<int,int>& screenSize
+    );
+
     static void renderText(
         SDL_Renderer& renderer,
         const std::string& text,
@@ -70,16 +81,18 @@ public:
     static void setWeapon(WeaponType weapon);
     static void setAmmo(const char, int num);
     static void setHealth(int hp);
+    static void addKey(KeyType key);
     static void animateOneShot();
     static void addTexture(WeaponType weapon, const char* filePath, SDL_Renderer& rend);
-
-    static void addPanelTexture(WeaponType weapon, const char* filePath, SDL_Renderer& rend);
+    static void addPanelTextureK(KeyType key, const char* filePath, SDL_Renderer& rend);
+    static void addPanelTextureW(WeaponType weapon, const char* filePath, SDL_Renderer& rend);
     static void renderPanelWeaponImage(
         SDL_Renderer& rend,
         const std::pair<int, int>& screenWH
     );
 private:
     static WeaponType currentWeapon;
+    static std::vector<KeyType> keysHeld;
     static std::map<WeaponType, int> ammo;
     static int health;
 
@@ -97,5 +110,8 @@ private:
     static std::map<HUDSections, int> panelSectionWidths;
 
     static std::map<WeaponType, SDLTexturePtr> panelWeaponImage;
+    static std::map<KeyType, SDLTexturePtr> keyUITextures;
+    
     static std::map<WeaponType, std::pair<int, int>> panelWeaponImageWH;
+    static std::map<KeyType, std::pair<int, int>> keyUITexturesWH;
 };

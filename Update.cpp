@@ -154,6 +154,7 @@ void Game::update(float deltaTime)
 
         if (distanceSq < keyRadius * keyRadius) {
             acquireKey(keyType);
+            UIManager::addKey(static_cast<KeyType>(keyType-1));
             // Remove key from map
             AllSpriteTextures[keyTypeToSpriteID[keyType]].active = false;
             break; // Exit loop since we modified the map

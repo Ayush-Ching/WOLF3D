@@ -1,28 +1,33 @@
 [Knife]
-Textures/WeaponUI/knife-0.png
-Textures/WeaponUI/knife-1.png
-Textures/WeaponUI/knife-2.png
-Textures/WeaponUI/knife-3.png
-Textures/WeaponUI/knife-4.png
+Textures/HUD/knife-0.png
+Textures/HUD/knife-1.png
+Textures/HUD/knife-2.png
+Textures/HUD/knife-3.png
+Textures/HUD/knife-4.png
 
 [Pistol]
-Textures/WeaponUI/pistol-0.png
-Textures/WeaponUI/pistol-1.png
-Textures/WeaponUI/pistol-2.png
-Textures/WeaponUI/pistol-3.png
-Textures/WeaponUI/pistol-4.png
+Textures/HUD/pistol-0.png
+Textures/HUD/pistol-1.png
+Textures/HUD/pistol-2.png
+Textures/HUD/pistol-3.png
+Textures/HUD/pistol-4.png
 
 [Rifle]
-Textures/WeaponUI/rifle-0.png
-Textures/WeaponUI/rifle-1.png
-Textures/WeaponUI/rifle-2.png
-Textures/WeaponUI/rifle-3.png
-Textures/WeaponUI/rifle-4.png
+Textures/HUD/rifle-0.png
+Textures/HUD/rifle-1.png
+Textures/HUD/rifle-2.png
+Textures/HUD/rifle-3.png
+Textures/HUD/rifle-4.png
 
 [Font]
 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ:?,-./!%'() Textures/Font/charset.png
 
 [Weapon]
-Textures/WeaponUI/0knife.png
-Textures/WeaponUI/0pist.png
-Textures/WeaponUI/0rifle.png
+Textures/HUD/0knife.png
+Textures/HUD/0pist.png
+Textures/HUD/0rifle.png
+
+[Keys]
+Textures/HUD/Key1.png
+Textures/HUD/Key2.png
+Textures/HUD/Key3.png
