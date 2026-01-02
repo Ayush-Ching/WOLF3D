@@ -30,12 +30,12 @@ void Game::update(float deltaTime)
         std::cout << "X out of bounds: " << mx << "\n";
         return;
     }
-    int tileX = Map[(int)playerPosition.second][(int)(newX + playerSquareSize/2 * (newX>playerPosition.first?1:-1))];
-    int tileY = Map[(int)(newY + playerSquareSize/2 * (newY>playerPosition.second?1:-1))][(int)playerPosition.first];
+    int tileX = Map[(int)playerPosition.second][(int)(newX + playerSquareSize * (newX>playerPosition.first?1:-1))];
+    int tileY = Map[(int)(newY + playerSquareSize * (newY>playerPosition.second?1:-1))][(int)playerPosition.first];
     if (tileX == 0 ||
         (isDoor(tileX) &&
         doors[{
-            (int)(newX + playerSquareSize/2 * (newX > playerPosition.first ?1:-1)),
+            (int)(newX + playerSquareSize * (newX > playerPosition.first ?1:-1)),
             (int)playerPosition.second
                 }]
             .openAmount == 1.0f))
@@ -49,7 +49,7 @@ void Game::update(float deltaTime)
         (isDoor(tileY) &&
         doors[{
             (int)playerPosition.first,
-            (int)(newY + playerSquareSize/2 * (newY > playerPosition.second ?1:-1)),
+            (int)(newY + playerSquareSize * (newY > playerPosition.second ?1:-1)),
                 }]
             .openAmount == 1.0f))
     {
@@ -83,7 +83,7 @@ void Game::update(float deltaTime)
 
         auto epos = e->askGameToMove(deltaTime);
         std::pair<int, int> coor;
-        int hasWall = canMoveTo(epos.first, epos.second, coor);
+        int hasWall = canMoveTo(epos.first, epos.second, e->get_size(), coor);
         if(hasWall > 0){
             e->allowWalkNextFrame();
         }
@@ -92,6 +92,8 @@ void Game::update(float deltaTime)
         }
         e->_process(deltaTime, playerPosition, playerAngle);
         if(e->get_wantToOpenDoor()){
+            std::cout<<"Enemy want to open door at ("<<coor.first<<", "
+            <<coor.second<<")"<<std::endl;
             if(doors.count(coor) && !doors[coor].locked && 
             !(doors[coor].opening || doors[coor].closing)){
                 doors[coor].opening = true;

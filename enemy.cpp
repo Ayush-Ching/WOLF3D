@@ -99,7 +99,7 @@ void Enemy::_process(float deltaTime, const std::pair<float, float>& playerPosit
     }
 }
 std::pair<float, float> Enemy::askGameToMove(float deltaTime){
-    float step = moveSpeed * deltaTime + sze/2; 
+    float step = moveSpeed * deltaTime; 
     float newX = position.first + step * std::cos(angle);
     float newY = position.second - step * std::sin(angle);
     return std::make_pair(newX, newY);

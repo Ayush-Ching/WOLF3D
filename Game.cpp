@@ -60,9 +60,9 @@ bool Game::collidesWithEnemy(float x, float y) {
         if (e->get_isDead()) continue;
         if (aabbIntersect(
             x, y,
-            playerSquareSize * 0.5f, playerSquareSize * 0.5f,
+            playerSquareSize, playerSquareSize,
             e->get_position().first, e->get_position().second,
-            e->get_size()/2, e->get_size()/2
+            e->get_size(), e->get_size()
         )) {
             return true;
         }
@@ -78,29 +78,66 @@ void Game::acquireKey(int keyType) {
     }
 }
 
-int Game::canMoveTo(float x, float y, std::pair<int, int>& cord) {
-    // Check map boundaries
-    if (x < 0 || x >= Map[0].size() || y < 0 || y >= Map.size()) {
+int Game::canMoveTo(
+    float x, float y,
+    float width,
+    std::pair<int,int>& cord)
+{
+    float half = width * 0.5f;
+
+    // Object AABB
+    float objX = x - half;
+    float objY = y - half;
+    float objW = width;
+    float objH = width;
+
+    // Expanded bounds check
+    if (objX < 0 || objY < 0 ||
+        objX + objW >= Map[0].size() ||
+        objY + objH >= Map.size())
+    {
         return 0;
     }
 
-    int val = Map[(int)y][(int)x];
-    if(val == 0)
-        return 1;
+    // Tile range overlapped by the AABB
+    int minX = (int)std::floor(objX);
+    int maxX = (int)std::floor(objX + objW);
+    int minY = (int)std::floor(objY);
+    int maxY = (int)std::floor(objY + objH);
 
-    if(!isDoor(val))
-        return 0;
+    for (int ty = minY; ty <= maxY; ++ty) {
+        for (int tx = minX; tx <= maxX; ++tx) {
 
-    // Check for doors
-    int mapX = static_cast<int>(x);
-    int mapY = static_cast<int>(y);
-    //std::cout<<"Want to move to tile ("<<mapX<<", "<<mapY<<")\n";
-    auto doorIt = doors.find({mapX, mapY});
-    if (doorIt != doors.end()) {
-        Door& door = doorIt->second;
-        if (door.openAmount < 1.0f) {
-            cord = {mapX, mapY};
-            return -1;
+            int val = Map[ty][tx];
+            if (val == 0)
+                continue;
+
+            // Tile AABB
+            float tileX = (float)tx;
+            float tileY = (float)ty;
+
+            if (!aabbIntersect(
+                    objX, objY, objW, objH,
+                    tileX, tileY, 1.0f, 1.0f))
+                continue;
+
+            // Wall
+            if (!isDoor(val)) {
+                //std::cout<<"Enemy stopped by wall val="<<val
+                //<<"at ("<<tileX<<", "<<tileY<<")"<<"\n";
+                return 0;
+            }
+
+            // Door
+            auto doorIt = doors.find({tx, ty});
+            if (doorIt != doors.end()) {
+                Door& door = doorIt->second;
+                if (door.openAmount < 1.0f) {
+                    cord = {tx, ty};
+                    //std::cout<<"Enemy stopped by door\n";
+                    return -1;
+                }
+            }
         }
     }
 

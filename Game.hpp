@@ -71,7 +71,7 @@ public:
     void acquireWeapon(int weaponType);
     bool playerHasWeapon(int weaponType);
     void loadWeaponsTexture(const char* filePath);
-    int canMoveTo(float x, float y, std::pair<int, int>&);
+    int canMoveTo(float x, float y, float s, std::pair<int, int>&);
     void loadHealthPackTexture(const char* filePath);
     void loadAmmoPackTexture(const char* filePath);
     void spawnRandomAmmoPack(std::pair<int, int>);
@@ -90,7 +90,7 @@ private:
     float halfFov = fovRad / 2.0f;
 
     float playerHeight=0.5f, mouseSensitivity=0.002f;
-    float playerSquareSize=1.0f;
+    float playerSquareSize=0.5f;
     std::pair<float, float> playerPosition;
     std::pair<int, int> ScreenHeightWidth;
     std::pair<double, double> playerMoveDirection = {0.0, 0.0};

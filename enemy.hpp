@@ -41,7 +41,7 @@ class Enemy {
     int painChanceDivisor = 4; // 1 in 4 chance
     float walk_angle_error = 10.0f * M_PI / 180.0f; // ±10 degrees
     float attackRange = 7.0f;
-    int doorOpenChanceDivisor = 3; // 1 in 3 chance
+    int doorOpenChanceDivisor = 1; // 1 in 3 chance
 
     // AI timing
     float thinkTimer = 0.0f;
@@ -51,7 +51,7 @@ class Enemy {
     bool wantToOpenThisFrame = false;
 
     std::pair<float, float> position, destinationOfWalk;
-    float angle, sze=1.0f, moveSpeed = 1.0f, DurationPerSprite = 0.25f, fracTime = 0.0f;
+    float angle, sze=0.25f, moveSpeed = 1.0f, DurationPerSprite = 0.25f, fracTime = 0.0f;
     int currentFrame = 0, frameIndex = 0, directionNum;
     std::map<EnemyState, std::vector<int>> Animations;
 public:

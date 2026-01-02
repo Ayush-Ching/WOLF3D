@@ -234,7 +234,7 @@ void Game::render()
         float dx = sx - playerPosition.first;
         float dy = sy - playerPosition.second;
         float spriteDist = sqrt(dx*dx + dy*dy);
-        if(spriteDist < playerSquareSize / 2)
+        if(spriteDist < playerSquareSize)
             continue;
 
         // Angle between player view and sprite
