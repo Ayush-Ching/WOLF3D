@@ -87,11 +87,9 @@ void Enemy::_process(float deltaTime, const std::pair<float, float>& playerPosit
                 position.second -= step * std::sin(angle);
             }
             else{
-                if(canWalkThisFrame < 0 && canOpenDoor()){
-                    int mapX = static_cast<int>(destinationOfWalk.first);
-                    int mapY = static_cast<int>(destinationOfWalk.second);
-                    openDoorAt(std::make_pair(mapX, mapY));
-                }
+                if(canWalkThisFrame < 0 && canOpenDoor())
+                    openDoor();
+                
                 destinationOfWalk = position; // cancel walk
                 walking = false;
                 setAnimState(ENEMY_IDLE, false);
@@ -101,7 +99,7 @@ void Enemy::_process(float deltaTime, const std::pair<float, float>& playerPosit
     }
 }
 std::pair<float, float> Enemy::askGameToMove(float deltaTime){
-    float step = moveSpeed * deltaTime + 1.0f; // small buffer
+    float step = moveSpeed * deltaTime + sze/2; 
     float newX = position.first + step * std::cos(angle);
     float newY = position.second - step * std::sin(angle);
     return std::make_pair(newX, newY);
@@ -321,7 +319,7 @@ bool Enemy::randomAttackChance(int chanceDivisor){
     return false;
 }
 int Enemy::computeEnemyHitChance(float dist) {
-    const float MIN_DIST = 3.0f;
+    const float MIN_DIST = 1.5f;
     const float MAX_DIST = attackRange + 1.0f;
 
     dist = std::clamp(dist, MIN_DIST, MAX_DIST);
@@ -347,11 +345,6 @@ bool Enemy::canOpenDoor()
 {
     return (rand() % doorOpenChanceDivisor == 0);
 }
-void Enemy::openDoorAt(std::pair<int, int> coor){
-    doorCoord = coor;
+void Enemy::openDoor(){
     wantToOpenThisFrame = true;
-    std::cout<<"Enemy opening door at ("<<coor.first<<", "<<coor.second<<")\n";
-}
-std::pair<int, int> Enemy::nearbyDoor(){
-    return doorCoord;
 }

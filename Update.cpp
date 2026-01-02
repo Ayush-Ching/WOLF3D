@@ -77,8 +77,13 @@ void Game::update(float deltaTime)
 
     // Update enemies
     for(const std::unique_ptr<Enemy>& e : enemies){
+        // last frame posn
+        int EX = e->get_position().first;
+        int EY = e->get_position().second;
+
         auto epos = e->askGameToMove(deltaTime);
-        int hasWall = canMoveTo(epos.first, epos.second);
+        std::pair<int, int> coor;
+        int hasWall = canMoveTo(epos.first, epos.second, coor);
         if(hasWall > 0){
             e->allowWalkNextFrame();
         }
@@ -87,8 +92,8 @@ void Game::update(float deltaTime)
         }
         e->_process(deltaTime, playerPosition, playerAngle);
         if(e->get_wantToOpenDoor()){
-            auto coor = e->nearbyDoor();
-            if(doors.count(coor) && !doors[coor].locked){
+            if(doors.count(coor) && !doors[coor].locked && 
+            !(doors[coor].opening || doors[coor].closing)){
                 doors[coor].opening = true;
             }
             else{
@@ -140,6 +145,23 @@ void Game::update(float deltaTime)
         AllSpriteTextures[e->get_spriteID()].texture = it->second;
         AllSpriteTextures[e->get_spriteID()].position = e->get_position();
 
+        // new position;
+        int newEX = e->get_position().first;
+        int newEY = e->get_position().second;
+
+        if(newEX != EX || newEY != EY || e->get_isDead()){
+            if(isDoor(Map[EY][EX]) && 
+            doors.count({EX, EY}) &&
+            !doors[{EX, EY}].vacant){
+                doors[{EX, EY}].vacant = true;
+                std::cout << "ENEMY Vacated\n";
+            }
+            if(isDoor(Map[newEY][newEX]) && 
+            doors.count({newEX, newEY}) && !e->get_isDead()){
+                doors[{newEX, newEY}].vacant = false;
+                std::cout<< "ENEMY Filled\n";
+            }
+        }
     }
     if(hasShot){
         fireCooldown += deltaTime;

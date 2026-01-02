@@ -62,7 +62,7 @@ bool Game::collidesWithEnemy(float x, float y) {
             x, y,
             playerSquareSize * 0.5f, playerSquareSize * 0.5f,
             e->get_position().first, e->get_position().second,
-            e->get_size(), e->get_size()
+            e->get_size()/2, e->get_size()/2
         )) {
             return true;
         }
@@ -78,7 +78,7 @@ void Game::acquireKey(int keyType) {
     }
 }
 
-int Game::canMoveTo(float x, float y) {
+int Game::canMoveTo(float x, float y, std::pair<int, int>& cord) {
     // Check map boundaries
     if (x < 0 || x >= Map[0].size() || y < 0 || y >= Map.size()) {
         return 0;
@@ -99,6 +99,7 @@ int Game::canMoveTo(float x, float y) {
     if (doorIt != doors.end()) {
         Door& door = doorIt->second;
         if (door.openAmount < 1.0f) {
+            cord = {mapX, mapY};
             return -1;
         }
     }

@@ -36,7 +36,7 @@ class Enemy {
     // combat stats
     int health = 100;
     int baseDamage = 10, damageSpread = 5;
-    int attackChanceDivisor = 2;
+    int attackChanceDivisor = 3;
     int accuracyDivisor = 6;   // 1 in 6 chance 
     int painChanceDivisor = 4; // 1 in 4 chance
     float walk_angle_error = 10.0f * M_PI / 180.0f; // ±10 degrees
@@ -45,10 +45,9 @@ class Enemy {
 
     // AI timing
     float thinkTimer = 0.0f;
-    float thinkInterval = 0.3f;
+    float thinkInterval = 0.5f;
 
     // Door opening
-    std::pair<int, int> doorCoord;
     bool wantToOpenThisFrame = false;
 
     std::pair<float, float> position, destinationOfWalk;
@@ -87,7 +86,7 @@ public:
     void allowWalkNextFrame() { canWalkThisFrame = 1; }
     bool get_isDead() const { return isDead; }
     bool canOpenDoor();
-    void openDoorAt(std::pair<int, int>);
+    void openDoor();
     bool get_wantToOpenDoor() const { return wantToOpenThisFrame; }
     std::pair<int, int> nearbyDoor();
     void reset_wantToOpenThisFrame() { wantToOpenThisFrame = false; }
