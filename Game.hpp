@@ -48,7 +48,7 @@ enum class GameState{
     //FOR DEPICTING PROGESS BARS
     MAINMENU,
     GAMEPLAY,
-    PAUSE,
+    PAUSEMENU,
     GAMELOOSE,
     GAMEWON
 };
