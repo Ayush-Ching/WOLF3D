@@ -98,6 +98,14 @@ public:
 
     static void updateNotifications();
     static void notify(std::string text, SDL_Color);
+
+    static void drawFilledRectWithBorder(
+        SDL_Renderer& renderer,
+        const SDL_Rect& rect,
+        SDL_Color fillColor,
+        SDL_Color borderColor,
+        int borderThickness
+    );
 private:
     static WeaponType currentWeapon;
     static std::vector<KeyType> keysHeld;

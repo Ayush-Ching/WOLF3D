@@ -500,7 +500,7 @@ void UIManager::loadFont(const char* charsetAndFilePath, SDL_Renderer& renderer)
 }
 
 // UI Helper
-void drawFilledRectWithBorder(
+void UIManager::drawFilledRectWithBorder(
     SDL_Renderer& renderer,
     const SDL_Rect& rect,
     SDL_Color fillColor,

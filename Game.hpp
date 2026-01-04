@@ -91,6 +91,7 @@ public:
     const SDL_Renderer& getRenderer() const;
     GameState getState() {return state;};
     void setState(GameState s) {state = s;};
+    void quit(){isRunning=false;}
 private:
     GameState state = GameState::GAMEPLAY;
 

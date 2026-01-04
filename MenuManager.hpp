@@ -2,6 +2,7 @@
 #include "UIManager.hpp"
 #include <unordered_map>
 #include <functional>
+#include <tuple>
 
 enum class Menu {
     MAIN,
@@ -52,20 +53,27 @@ public:
 
         oIt->second();
     }
-
-    static void handleEvents(bool&);
-    static void renderMenu(); // use UIManager here
+    static void loadCursorImage(const char* filePath, SDL_Renderer& r);
+    static void Init(SDL_Renderer&);
+    static bool handleEvents();
+    static void renderMenu(SDL_Renderer&, const std::pair<int, int>&); // use UIManager here
     // No "update" needed in menus, also no separate textures
     // only plain filled squares and text
     // (not implementing any animations)
 private:
     static Menu currentMenu;
     static int optionSelected;
+    static SDLTexturePtr cursorImage;
+    static std::pair<int, int> cursorImageWH;
     static std::unordered_map<Menu, int, MenuHash> optionCounts;
-
+    static std::unordered_map<Menu, std::vector<std::string>, MenuHash> 
+    buttonNames;
     static std::unordered_map<
         Menu,
         std::unordered_map<int, Action>,
         MenuHash
     > actions;
+
+    static std::tuple<SDL_Color, SDL_Color, SDL_Color> menuColors;
+    static std::tuple<int, int> fontSizes;
 };

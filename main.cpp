@@ -1,6 +1,7 @@
 #include "Game.hpp"
 #include "AudioManager.hpp"
 #include "UIManager.hpp"
+#include "MenuManager.hpp"
 #include <iostream>
 Game* game = nullptr;
 
@@ -47,6 +48,9 @@ int main(int argc, char* argv[]) {
             break;
         
         default:
+            if (MenuManager::handleEvents())
+                game->quit();
+            MenuManager::renderMenu(game->getRenderer(), {800, 600});
             break;
         }
         
