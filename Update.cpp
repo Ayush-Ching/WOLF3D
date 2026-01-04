@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include "UIManager.hpp"
+#include "AudioManager.hpp"
 
 void Game::update(float deltaTime)
 {

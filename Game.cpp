@@ -1,5 +1,5 @@
 #include "Game.hpp"
-
+#include "AudioManager.hpp"
 
 Game::Game(){
 

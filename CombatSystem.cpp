@@ -1,5 +1,5 @@
 #include "Game.hpp"
-
+#include "AudioManager.hpp"
 bool Game::canShootEnemy(float dist){
     const float MIN_DIST = 1.0f;
     const float MAX_DIST = 64.0f;   

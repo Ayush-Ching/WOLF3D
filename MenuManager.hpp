@@ -16,7 +16,7 @@ struct MenuHash {
     }
 };
 
-using Action = std::function<void(int)>;
+using Action = std::function<void(void)>;
 
 class MenuManager {
 public:
@@ -50,12 +50,13 @@ public:
         auto oIt = mIt->second.find(optionSelected);
         if (oIt == mIt->second.end()) return;
 
-        oIt->second(optionSelected);
+        oIt->second();
     }
 
-    static void handleEvents();
+    static void handleEvents(bool&);
     static void renderMenu(); // use UIManager here
-    // No "update" needed in menus 
+    // No "update" needed in menus, also no separate textures
+    // only plain filled squares and text
     // (not implementing any animations)
 private:
     static Menu currentMenu;

@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "AudioManager.hpp"
 #include "UIManager.hpp"
 #include <iostream>
 Game* game = nullptr;
@@ -37,9 +38,17 @@ int main(int argc, char* argv[]) {
         lastTicks = currentTicks;
 
         // Game Loop 
-        game->handleEvents();
-        game->update(deltaTime);   
-        game->render();
+        switch (game->getState())
+        {
+        case GameState::GAMEPLAY:
+            game->handleEvents();
+            game->update(deltaTime);
+            game->render();
+            break;
+        
+        default:
+            break;
+        }
         
         // Frame Limiter 
         Uint32 frameTime = SDL_GetTicks() - frameStart;

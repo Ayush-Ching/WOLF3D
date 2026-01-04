@@ -7,7 +7,6 @@
 #include <vector>
 #include <utility>
 #include <map>
-#include "AudioManager.hpp"
 
 // Utilities
 using SDLWindowPtr =
@@ -90,10 +89,10 @@ public:
     void loadDoorFrame(const char* filePath);
     SDL_Renderer& getRenderer();
     const SDL_Renderer& getRenderer() const;
-    GameState getState();
+    GameState getState() {return state;};
     void setState(GameState s) {state = s;};
 private:
-    GameState state;
+    GameState state = GameState::GAMEPLAY;
 
     bool isRunning;
     SDLWindowPtr   window   {nullptr, SDL_DestroyWindow};

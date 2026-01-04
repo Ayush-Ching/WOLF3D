@@ -1,5 +1,7 @@
 #include "Game.hpp"
 #include "UIManager.hpp"
+#include "AudioManager.hpp"
+
 void Game::handleEvents()
 {
     SDL_Event event;
