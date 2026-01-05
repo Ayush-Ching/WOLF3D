@@ -2,7 +2,8 @@
 #include "SDL_mixer.h"
 #include <string>
 #include <map>
-
+#ifndef AUDIO_MANAGER_HPP
+#define AUDIO_MANAGER_HPP
 using MixChunkPtr =
     std::unique_ptr<Mix_Chunk, decltype(&Mix_FreeChunk)>;
 
@@ -24,3 +25,4 @@ public:
     static void playMusic(const std::string& name, int loop = -1);
     static void stopMusic();
 };
+#endif // AUDIO_MANAGER_HPP

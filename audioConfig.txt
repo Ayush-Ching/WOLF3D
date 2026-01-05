@@ -13,3 +13,4 @@ pain2 : Sounds/PlayerPain2.wav
 pickup : Sounds/Pickup.wav
 door_open : Sounds/Door.wav
 door_close : Sounds/Door.wav
+select : Sounds/MenuSelect.wav

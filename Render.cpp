@@ -279,7 +279,7 @@ void Game::render()
         }
 
         if(sprite.isEnemy){
-
+            /*
             SDL_RenderDrawLine(renderer.get(),
                 (int)(drawStartX + spriteWidth * (1-enemyBoundBox)/2), 0,
                 (int)(drawStartX + spriteWidth * (1-enemyBoundBox)/2), ScreenHeightWidth.second
@@ -289,6 +289,7 @@ void Game::render()
                 (int)(drawEndX - spriteWidth * (1-enemyBoundBox)/2), 0,
                 (int)(drawEndX - spriteWidth * (1-enemyBoundBox)/2), ScreenHeightWidth.second
             );
+            */
         }
 
         SDL_Texture* texture = sprite.texture.get();
@@ -326,10 +327,12 @@ void Game::render()
     else if (shotThisFrame) {
         shotThisFrame = false;
     }
+        /*
         SDL_RenderDrawLine(renderer.get(),
             ScreenHeightWidth.first/2, 0,
             ScreenHeightWidth.first/2, ScreenHeightWidth.second
             );
+        */
 
     UIManager::renderHUD(
         getRenderer(),

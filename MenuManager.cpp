@@ -130,11 +130,11 @@ bool MenuManager::handleEvents(GameState& state){
         {
             if (event.key.keysym.scancode == SDL_SCANCODE_UP)
             {
-                std::cout<<"UP\n";
+                //std::cout<<"UP\n";
                 moveUp();
             }else if (event.key.keysym.scancode == SDL_SCANCODE_DOWN)
             {
-                std::cout<<"DOWN\n";
+                //std::cout<<"DOWN\n";
                 moveDown();
             }else if (event.key.keysym.scancode == SDL_SCANCODE_RETURN ||
                 event.key.keysym.scancode == SDL_SCANCODE_KP_ENTER)
@@ -143,7 +143,7 @@ bool MenuManager::handleEvents(GameState& state){
                     buttonNames[currentMenu][optionSelected]=="QUIT"){
                     return true;
                 }
-                std::cout<<"SELECTED OPTION "<<optionSelected<<std::endl;
+                //std::cout<<"SELECTED OPTION "<<optionSelected<<std::endl;
                 select(state);
             }
         }
@@ -201,12 +201,47 @@ void MenuManager::renderMenu(SDL_Renderer& renderer, const std::pair<int, int>& 
     std::string s;
     for (int i=0; h>0 && i<buttonNames[currentMenu].size(); i++){
         s = buttonNames[currentMenu][i];
-        if (i==optionSelected)
+        if (i==optionSelected){
             UIManager::renderText(renderer, s, x, y, scale, fontclrHig);
+
+            // Box where the cursor image must fit
+            SDL_Rect box {
+                x - UIManager::getGlyphSize().first * scale,
+                y,
+                UIManager::getGlyphSize().first * scale,
+                UIManager::getGlyphSize().second * scale
+            };
+
+            // Original image size
+            int imgW = cursorImageWH.first;
+            int imgH = cursorImageWH.second;
+
+            // Compute scale to preserve aspect ratio
+            float scaleX = static_cast<float>(box.w) / imgW;
+            float scaleY = static_cast<float>(box.h) / imgH;
+            float imgScale = std::min(scaleX, scaleY);
+
+            // Final rendered size
+            int renderW = static_cast<int>(imgW * imgScale);
+            int renderH = static_cast<int>(imgH * imgScale);
+
+            // Center image inside the box
+            SDL_Rect dst {
+                box.x + (box.w - renderW) / 2,
+                box.y + (box.h - renderH) / 2,
+                renderW,
+                renderH
+            };
+
+            // Render cursor image
+            SDL_RenderCopy(&renderer, cursorImage.get(), nullptr, &dst);
+
+        }
         else
             UIManager::renderText(renderer, s, x, y, scale, fontclrLow);
         y += UIManager::getGlyphSize().second * scale;
     }
+    
 
     // display text for some menus
     scale = 2;
@@ -231,6 +266,8 @@ void MenuManager::renderMenu(SDL_Renderer& renderer, const std::pair<int, int>& 
         y = UIManager::getGlyphSize().second * 2;
         UIManager::renderText(renderer, titles[currentMenu], x, y, scale, fontclrHig);
     }
+
     SDL_RenderPresent(&renderer);
 
 }
+

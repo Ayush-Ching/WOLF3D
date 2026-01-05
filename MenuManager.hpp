@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include "UIManager.hpp"
+#include "AudioManager.hpp"
 #include <unordered_map>
 #include <functional>
 #include <tuple>
@@ -37,8 +38,9 @@ public:
     }
 
     static void moveUp() {
-        if (optionSelected > 0) optionSelected--;
-        std::cout<<optionSelected<<std::endl;
+        if (optionSelected > 0){
+            optionSelected--;
+        }
     }
 
     static void moveDown() {
@@ -55,7 +57,8 @@ public:
 
         auto oIt = mIt->second.find(optionSelected);
         if (oIt == mIt->second.end()) return;
-        std::cout<<"CALLING FUNCTION\n";
+        
+        AudioManager::playSFX("select", MIX_MAX_VOLUME / 2);
         oIt->second(state);
     }
     static void set_displayTxt(std::string);
