@@ -338,4 +338,9 @@ void Game::update(float deltaTime)
     UIManager::setHealth(health);
     UIManager::update(deltaTime);
 
+    if(AudioManager::musicStopped()){
+        musicTrack += 1;
+        if (musicTrack > numOfTracks) musicTrack = 1;
+        AudioManager::playMusic(std::to_string(musicTrack), 0);
+    }
 }

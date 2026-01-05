@@ -61,12 +61,14 @@ std::string MenuManager::displayTxt;
 // Actions
 void play(GameState& state){
     state = GameState::RESET;
-    MenuManager::setMenu(Menu::NONE);   
+    MenuManager::setMenu(Menu::NONE);  
+    AudioManager::stopMusic(); 
     return;
 }
 void back_to_menu(GameState& state){
     state = GameState::MAINMENU;
     MenuManager::setMenu(Menu::MAIN);
+    AudioManager::playMusic("Menu", -1);
 }
 void show_instructions(GameState& state){
     MenuManager::setMenu(Menu::INSTRUCTIONS);
@@ -83,6 +85,7 @@ WORLDD)");
 void resume(GameState& state){
     state = GameState::GAMEPLAY;
     MenuManager::setMenu(Menu::NONE);
+    AudioManager::stopMusic();
 }
 void MenuManager::Init(SDL_Renderer& r){
     loadCursorImage("Textures/Red_triangle.svg", r);

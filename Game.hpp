@@ -100,11 +100,11 @@ private:
     bool isRunning;
     SDLWindowPtr   window   {nullptr, SDL_DestroyWindow};
     SDLRendererPtr renderer {nullptr, SDL_DestroyRenderer};
-    float playerAngle, FOV=45.0f, playerSpeed=2.0f, rotationSensitivity=0.05f;
+    float playerAngle, FOV=45.0f, playerSpeed=5.0f, rotationSensitivity=0.05f;
     float fovRad = FOV * (PI / 180.0f);
     float halfFov = fovRad / 2.0f;
 
-    float playerHeight=0.5f, mouseSensitivity=0.002f;
+    float playerHeight=0.5f, mouseSensitivity=0.003f;
     float playerSquareSize=0.5f;
     std::pair<float, float> playerPosition, playerPositionOnLoad;
     std::pair<int, int> ScreenHeightWidth;
@@ -197,6 +197,7 @@ private:
     std::vector<Sprite> AllSpriteTextures;
     std::vector<int> renderOrder; // holds spriteIDs
 
+    int musicTrack = 1, numOfTracks = 5;
 };
 
 #endif

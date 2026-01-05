@@ -134,6 +134,7 @@ void AudioManager::loadAllAudios(const char* filePath)
         switch (currentSection) {
             case Section::Music:
                 loadMusic(name, path);
+                std::cout<<name<<" "<<name.size()<<std::endl;
                 break;
 
             case Section::SFX:
@@ -184,7 +185,9 @@ void AudioManager::playMusic(const std::string& name, int loop)
                   << Mix_GetError() << "\n";
     }
 }
-
+bool AudioManager::musicStopped(){
+    return !Mix_PlayingMusic();
+}
 void AudioManager::playSpatialSFX(
     const std::string& name,
     float distance,

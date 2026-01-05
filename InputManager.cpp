@@ -87,6 +87,7 @@ void Game::handleEvents()
             else if(event.key.keysym.scancode == SDL_SCANCODE_ESCAPE){
                 state = GameState::PAUSEMENU;
                 MenuManager::setMenu(Menu::PAUSE);
+                AudioManager::playMusic("Pause", -1);
             }
         }
 

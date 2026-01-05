@@ -25,6 +25,9 @@ int main(int argc, char* argv[]) {
     // Place Player
     game->placePlayerAt(2, 2, 0.0f);
 
+    // Start music 
+    AudioManager::playMusic("Menu", -1);
+
     const int FPS = 60;
     const float frameDelay = 1000.0f / FPS;
 

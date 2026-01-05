@@ -24,5 +24,6 @@ public:
         float relativeAngle);
     static void playMusic(const std::string& name, int loop = -1);
     static void stopMusic();
+    static bool musicStopped();
 };
 #endif // AUDIO_MANAGER_HPP
