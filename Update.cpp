@@ -352,4 +352,8 @@ void Game::update(float deltaTime)
             MenuManager::setMenu(Menu::GAME_WON);
         }
     }
+    if(health <= 0){
+        state = GameState::GAMELOOSE;
+        MenuManager::setMenu(Menu::GAME_LOSE);
+    }
 }
