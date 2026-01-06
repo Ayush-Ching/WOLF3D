@@ -209,6 +209,8 @@ private:
     std::map<SwitchState, SDLTexturePtr> exitTexture;
     std::map<SwitchState, std::pair<int, int>> exitWH;
     SwitchState currentSwitchState = SwitchState::ON;
+
+    float levelCrossDuration = 1.0f, levelCrossTimer = 0.0f;
 };
 
 #endif

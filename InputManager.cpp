@@ -83,6 +83,11 @@ void Game::handleEvents()
                         d.opening = true;
                     }
                 }
+                else if(Map[ty][tx] == switchID && 
+                    currentSwitchState == SwitchState::ON){
+                    currentSwitchState = SwitchState::OFF;
+                    AudioManager::playSFX("switch", MIX_MAX_VOLUME);
+                }
             }
             else if(event.key.keysym.scancode == SDL_SCANCODE_ESCAPE){
                 state = GameState::PAUSEMENU;

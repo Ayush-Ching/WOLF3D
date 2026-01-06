@@ -1,7 +1,7 @@
 #include "Game.hpp"
 #include "UIManager.hpp"
 #include "AudioManager.hpp"
-
+#include "MenuManager.hpp"
 void Game::update(float deltaTime)
 {
     // Normalize movement direction
@@ -342,5 +342,14 @@ void Game::update(float deltaTime)
         musicTrack += 1;
         if (musicTrack > numOfTracks) musicTrack = 1;
         AudioManager::playMusic(std::to_string(musicTrack), 0);
+    }
+    if(currentSwitchState == SwitchState::OFF){
+        levelCrossTimer += deltaTime;
+        if(levelCrossTimer >= levelCrossDuration){
+            levelCrossTimer = 0.0f;
+            currentSwitchState = SwitchState::ON;
+            state = GameState::GAMEWON;
+            MenuManager::setMenu(Menu::GAME_WON);
+        }
     }
 }

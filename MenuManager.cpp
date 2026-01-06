@@ -95,6 +95,8 @@ void MenuManager::Init(SDL_Renderer& r){
     bind(Menu::MAIN, 0, play);
     bind(Menu::PAUSE, 2, back_to_menu);
     bind(Menu::INSTRUCTIONS, 0, back_to_menu);
+    bind(Menu::GAME_LOSE, 0, back_to_menu);
+    bind(Menu::GAME_WON, 0, back_to_menu);
     bind(Menu::CREDITS, 0, back_to_menu);
     bind(Menu::MAIN, 1, show_instructions);
     bind(Menu::MAIN, 2, show_credits);
@@ -113,8 +115,8 @@ MenuManager::menuColors = {
 std::unordered_map<Menu, std::string, MenuHash> MenuManager::titles ={
     {Menu::MAIN, "OPTIONS"},
     {Menu::PAUSE, "OPTIONS"},
-    {Menu::GAME_LOSE, "YOU DIED :("},
-    {Menu::GAME_WON, "YOU WON :)"},
+    {Menu::GAME_LOSE, "YOU DIED"},
+    {Menu::GAME_WON, "YOU WON"},
     {Menu::INSTRUCTIONS, "CONTROLS"},
     {Menu::CREDITS, "CREDITS"}
 };
