@@ -174,7 +174,6 @@ void UIManager::update(float deltaTime)
         notifUpdateTimer = 0.0f;
     }
 
-    auto& anim = AvatarAnimation;
     avatarTimer += deltaTime;
     while (avatarTimer >= frameDuration)
     {
@@ -187,7 +186,7 @@ void UIManager::update(float deltaTime)
 
     if (!animating) return;
 
-    anim = weaponAnimations[currentWeapon];
+    auto& anim = weaponAnimations[currentWeapon];
     if (anim.frames.empty()) return;
 
     weaponAnimTimer += deltaTime;
