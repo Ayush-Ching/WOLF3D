@@ -11,6 +11,7 @@ Textures/Walls/9.png
 Textures/Walls/10.png
 Textures/Walls/11.png
 Textures/Walls/12.png
+Textures/Walls/13.png
 
 [Keys]
 Textures/Collectibles/Key1.png
@@ -34,3 +35,7 @@ Textures/Collectibles/0ammo1.png
 
 [Doorframe]
 Textures/Walls/DOOR.png
+
+[Exit]
+Textures/Walls/SWITCH-ON.png
+Textures/Walls/SWITCH-OFF.png

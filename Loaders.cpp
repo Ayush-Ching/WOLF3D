@@ -112,6 +112,10 @@ void Game::loadMapDataFromFile(const char* filename)
                 continue;
             }
                 
+            if (token == "E"){
+                token = std::to_string(switchID);
+                std::cout<<token<<'\n';
+            }
             // All other alphabets are taken as decoratives
             char x = '0';
             if(token.size()==1)
@@ -171,7 +175,7 @@ void Game::loadAllTextures(const char* filePath)
         return;
     }
 
-    enum Section { NONE, WALLS, KEYS, WEAPONS, HEALTHPACKS, AMMOPACKS, DOORFRAME };
+    enum Section { NONE, WALLS, KEYS, WEAPONS, HEALTHPACKS, AMMOPACKS, DOORFRAME, EXIT };
     Section currentSection = NONE;
 
     std::string line;
@@ -212,6 +216,10 @@ void Game::loadAllTextures(const char* filePath)
             currentSection = DOORFRAME;
             continue;
         }
+        if (low == "[exit]"){
+            currentSection = EXIT;
+            continue;
+        }
 
         // If it’s not a section header, it must be a file path
         if (currentSection == WALLS) {
@@ -232,12 +240,35 @@ void Game::loadAllTextures(const char* filePath)
         else if (currentSection == DOORFRAME){
             loadDoorFrame(line.c_str());
         }
+        else if (currentSection == EXIT){
+            loadExitFrame(line.c_str());
+        }
         else {
             std::cerr << "Warning: Path found outside any valid section: " << line << "\n";
         }
     }
 }
 
+void Game::loadExitFrame(const char* filePath){
+    int i = exitTexture.size() % 2;
+    SDL_Texture* raw = IMG_LoadTexture(renderer.get(), filePath);
+    if (!raw) {
+        std::cerr << "Failed to load Switch texture: "
+                  << filePath << " | " << IMG_GetError() << "\n";
+        return;
+    }
+    int height = 0, width = 0;
+    if (SDL_QueryTexture(raw, nullptr, nullptr, &width, &height) != 0) {
+        std::cerr << "Failed to query texture: "
+                  << SDL_GetError() << "\n";
+        SDL_DestroyTexture(raw);
+        return;
+    }
+    exitWH[static_cast<SwitchState>(i)] = std::make_pair(width, height);
+    exitTexture.emplace(static_cast<SwitchState>(i), SDLTexturePtr(raw,
+    SDL_DestroyTexture));
+    std::cout << "exit "<<i+1<<"\n";
+}
 
 void Game::loadEnemyTextures(const char* filePath)
 {

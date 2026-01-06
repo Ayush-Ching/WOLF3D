@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     game->loadDecorationTextures("Decorations.txt");
     AudioManager::loadAllAudios("audioConfig.txt");
     UIManager::loadTextures("HUD.txt", game->getRenderer());
-    game->loadMapDataFromFile("map.txt");
+    game->loadMapDataFromFile("testMap.txt");
 
     // Place Player
     game->placePlayerAt(2, 2, 0.0f);

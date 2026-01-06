@@ -22,3 +22,4 @@ pickup : Sounds/Pickup.wav
 door_open : Sounds/Door.wav
 door_close : Sounds/Door.wav
 select : Sounds/MenuSelect.wav
+switch : Sounds/Switch.wav

@@ -53,6 +53,11 @@ enum class GameState{
     RESET
 };
 
+enum class SwitchState{
+    ON,
+    OFF
+};
+
 class Game{
 public:
     Game();
@@ -95,6 +100,7 @@ public:
     void quit(){isRunning=false;}
     GameState state = GameState::GAMEPLAY;
     void restart();
+    void loadExitFrame(const char* filePath);
 private:
 
     bool isRunning;
@@ -198,6 +204,11 @@ private:
     std::vector<int> renderOrder; // holds spriteIDs
 
     int musicTrack = 1, numOfTracks = 5;
+
+    int switchID = 100;
+    std::map<SwitchState, SDLTexturePtr> exitTexture;
+    std::map<SwitchState, std::pair<int, int>> exitWH;
+    SwitchState currentSwitchState = SwitchState::ON;
 };
 
 #endif

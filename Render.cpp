@@ -154,10 +154,20 @@ void Game::render()
 
         // Wall Texture
         int texId = Map[mapY][mapX] - 1;
-        if (texId < 0 || texId >= wallTextures.size())
+        if ((texId < 0 || texId >= wallTextures.size()) && texId+1 != switchID)
             continue;
-        int imgWidth = wallTextureWidths[texId], imgHeight = wallTextureHeights[texId];
         
+        int imgWidth, imgHeight;
+        if (texId >= 0 && texId < wallTextures.size()){
+            imgWidth = wallTextureWidths[texId];
+            imgHeight = wallTextureHeights[texId];
+        }
+        else if (texId == switchID - 1){
+            imgWidth = exitWH[currentSwitchState].first;
+            imgHeight = exitWH[currentSwitchState].second;
+            //std::cout << "EXIT DETECTED WHILE RENDERING\n";
+        } 
+
         // -------- distance-based shading --------
         float maxLightDist = 8.0f;
         float shade = 1.0f - std::min(correctedDistance / maxLightDist, 1.0f);
@@ -170,7 +180,12 @@ void Game::render()
         if(doorSide)
             SDL_SetTextureColorMod(DOOR_FRAME.get(),
                             brightness, brightness, brightness);
-        else
+        else if (texId+1 == switchID){
+            SDL_SetTextureColorMod(exitTexture[currentSwitchState].get(),
+                            brightness, brightness, brightness);
+                            //std::cout<<"Shading applied to exit\n";
+        }
+        else 
             SDL_SetTextureColorMod(wallTextures[texId].get(),
                             brightness, brightness, brightness);
         // --------------------------------------
@@ -183,12 +198,23 @@ void Game::render()
 
             SDL_Rect srcRect  = { texX, 0, 1, imgHeight };
             SDL_Rect destRect = { ray, drawStart, 1, drawEnd - drawStart };
-            if(doorSide)
+            if(doorSide){
                 SDL_RenderCopy(renderer.get(), 
                 DOOR_FRAME.get(), &srcRect, &destRect);
-            else
+                SDL_SetTextureColorMod(DOOR_FRAME.get(), 255, 255, 255);
+            }
+            else if (texId+1 == switchID) {
+                SDL_RenderCopy(renderer.get(), 
+                exitTexture[currentSwitchState].get(), &srcRect, &destRect);
+                SDL_SetTextureColorMod(exitTexture[currentSwitchState].get(), 255, 255, 255);
+                //std::cout<<"exit rendered\n";
+            }
+            else{
                 SDL_RenderCopy(renderer.get(), 
                 wallTextures[texId].get(), &srcRect, &destRect);
+                SDL_SetTextureColorMod(wallTextures[texId].get(), 255, 255, 255);
+                
+            }
         }
         else if (wallX > doors[{mapX, mapY}].openAmount)
         {
@@ -204,10 +230,9 @@ void Game::render()
                         wallTextures[texId].get(),
                         &srcRect,
                         &destRect);
+            SDL_SetTextureColorMod(wallTextures[texId].get(), 255, 255, 255);
+                
         }
-
-
-        
     }
     // Rendering Sprites
     // Sort sprites by distance from player (far to near)
