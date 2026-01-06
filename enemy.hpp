@@ -51,7 +51,7 @@ class Enemy {
     bool wantToOpenThisFrame = false;
 
     std::pair<float, float> position, destinationOfWalk;
-    float angle, sze=0.25f, moveSpeed = 1.0f, DurationPerSprite = 0.25f, fracTime = 0.0f;
+    float angle, sze=0.5f, moveSpeed = 1.0f, DurationPerSprite = 0.25f, fracTime = 0.0f;
     int currentFrame = 0, frameIndex = 0, directionNum;
     std::map<EnemyState, std::vector<int>> Animations;
 public:

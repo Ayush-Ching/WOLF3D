@@ -110,7 +110,7 @@ void Game::update(float deltaTime)
         //if(x) std::cout << "Enemy at (" << e->get_position().first << ", " << e->get_position().second << ") can see player.\n";
         int dmg = e->getDamageThisFrame();
         e->clearDamageThisFrame();
-        if(x && dmg > 0){
+        if(dmg > 0){
             health -= dmg;
             if(health < 0) health = 0;
             std::cout << "health of player : "<<health<<std::endl;
@@ -138,10 +138,6 @@ void Game::update(float deltaTime)
         while (enemyAngle < -PI) enemyAngle += 2 * PI;
 
         // Check if enemy is inside FOV 
-        if (fabs(enemyAngle) > halfFov){
-            //std::cout<<"enemy out of FOV\n";
-            continue; 
-        }
         int frame = e->get_current_frame(), dir = e->get_dirn_num();
         auto it = enemyTextures.find({frame, dir});
         if (it == enemyTextures.end()) continue;

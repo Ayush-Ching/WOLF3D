@@ -70,7 +70,7 @@ public:
     bool running(){return isRunning;}
     void loadMapDataFromFile(const char* filename);
     void loadColorConfigFromFile(const char* filename);
-    void placePlayerAt(int x, int y, float angle);
+    void placePlayerAt(float x, float y, float angle);
     void printPlayerPosition();
     void addWallTexture(const char* filePath);
     bool isDoor(int tileValue);

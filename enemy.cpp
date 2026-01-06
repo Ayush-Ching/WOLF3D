@@ -59,6 +59,8 @@ void Enemy::_process(float deltaTime, const std::pair<float, float>& playerPosit
                     fracTime = 0.0f;
                     if(state == ENEMY_SHOOT){
                         damageThisFrame = rollEnemyDamage();
+                        std::cout<<"Enemy giving damage "<<damageThisFrame
+                        <<std::endl;
                     }
                 }
             }

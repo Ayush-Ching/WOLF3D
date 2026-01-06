@@ -19,7 +19,7 @@ bool aabbIntersect(
            ay + ah > by;
 }
 
-void Game::placePlayerAt(int x, int y, float angle) {
+void Game::placePlayerAt(float x, float y, float angle) {
     playerPosition = {static_cast<double>(x), static_cast<double>(y)};
     playerPositionOnLoad = playerPosition;
     playerAngle = angle;
@@ -141,7 +141,14 @@ int Game::canMoveTo(
             }
         }
     }
-
+    if (aabbIntersect(
+            playerPosition.first, playerPosition.second,
+            playerSquareSize, playerSquareSize,
+            x, y,
+            width, width
+        )){
+            return 0;
+        }
     return 1;
 }
 
