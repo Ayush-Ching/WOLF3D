@@ -7,6 +7,7 @@ void Game::restart(){
     weapons.clear();
     currentWeapon=0;
     keysHeld.clear();
+    musicTrack = 1;
     for (int i=0; i<enemies.size(); i++){
         enemies[i]->setPosition(enemyLoadLocations[i]);
         enemies[i]->reset();
