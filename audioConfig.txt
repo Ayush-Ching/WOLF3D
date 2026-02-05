@@ -12,6 +12,7 @@ enemy_die1 : Sounds/Death1.wav
 enemy_die2 : Sounds/Death2.wav
 enemy_pain : Sounds/EnemyPain.wav
 enemy_shoot : Sounds/MachineGun.wav
+enemy_alert : Sounds/HALTSND.WAV
 knife : Sounds/Knife.wav
 rifle : Sounds/MachineGun.wav
 pistol : Sounds/Pistol.wav

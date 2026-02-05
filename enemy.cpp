@@ -240,8 +240,18 @@ void Enemy::think(const std::pair<float, float>& playerPosition, float playerAng
     bool inAttackRange = (
         dist <= attackRange
     );
-    if (canSeePlayer) 
+    if (canSeePlayer) {
+        if(!alerted)
+        AudioManager::playSpatialSFX("enemy_alert", 
+            dist,
+            atan2(
+                position.second - playerPosition.second,
+                position.first  - playerPosition.first
+            ) - playerAngle
+        );
         alerted = true; // Seen player once -> Alerted
+        
+    }
     int chanceDivisor = computeEnemyHitChance(dist);
     if(canSeePlayer && inAttackRange && randomAttackChance(chanceDivisor)){
         setAnimState(ENEMY_SHOOT, true);
