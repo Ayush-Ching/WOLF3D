@@ -195,4 +195,5 @@ void Game::spawnRandomAmmoPack(std::pair<int, int> pos){
     indexOfSpawnedAmmos.push_back(AllSpriteTextures.size());
     AllSpriteTextures.push_back(Sprite{ spriteID, spawnPoint, ammoPackTextures[2],
                  ammoPackWidthsHeights[3].first, ammoPackWidthsHeights[3].second});
+    std::cout << "Spawned ammo pack of type " << type << " at (" << spawnPoint.first << ", " << spawnPoint.second << ")\n";
 }
