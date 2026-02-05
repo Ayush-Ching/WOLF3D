@@ -8,7 +8,4 @@ Important to do:
     a. The binary currently can exclusively run via terminal
     
 Cherry On Top:
-1. Restart Music and Audio systems too
-    a. Sometimes door closing sounds continue when restarting
-    b. Gameplay Music should remain same after restarting
-2. Add Icon Image
+1. Add Icon Image
