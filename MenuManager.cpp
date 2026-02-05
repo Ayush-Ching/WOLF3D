@@ -73,14 +73,34 @@ void back_to_menu(GameState& state){
 void show_instructions(GameState& state){
     MenuManager::setMenu(Menu::INSTRUCTIONS);
     MenuManager::set_displayTxt(
-R"(HELLO
-WORLD)");
+R"(MENU CONTROLS:
+UP, DOWN - MOVE
+ENTER    - SELECT OPTION
+
+IN GAME CONTROLS:
+WASD + UP, DOWN - MOVE
+RIGHT, LEFT     - TURN
+MOUSE           - AIM, SHOOT
+SPACE           - OPEN DOORS
+1 2 3           - SWITCH WEAPONS
+ESC             - PAUSE MENU
+)");
 }
 void show_instructions_pause(GameState& state){
     MenuManager::setMenu(Menu::INSTRUCTIONS_DURING_PAUSE);
     MenuManager::set_displayTxt(
-R"(HELLO
-WORLD)");
+R"(MENU CONTROLS:
+UP, DOWN - MOVE
+ENTER    - SELECT OPTION
+
+IN GAME CONTROLS:
+WASD + UP, DOWN - MOVE
+RIGHT, LEFT     - TURN
+MOUSE           - AIM, SHOOT
+SPACE           - OPEN DOORS
+1 2 3           - SWITCH WEAPONS
+ESC             - PAUSE MENU
+)");
 }
 void show_credits(GameState& state){
     MenuManager::setMenu(Menu::CREDITS);
@@ -258,14 +278,14 @@ void MenuManager::renderMenu(SDL_Renderer& renderer, const std::pair<int, int>& 
     
 
     // display text for some menus
-    scale = 2;
-    x -= UIManager::getGlyphSize().first * scale;
+    scale = 1;
+    x -= UIManager::getGlyphSize().first * scale + 60;
     if(h==0){
         std::istringstream iss(displayTxt);
         std::string line;
         int lines = std::count(displayTxt.begin(), displayTxt.end(), '\n');
         h = lines * UIManager::getGlyphSize().second * scale;
-        y = screenWH.second/2 - h/2;
+        y = screenWH.second/2 - h/2 + 60;
         while (std::getline(iss, line)) {
             UIManager::renderText(renderer, line, x, y, scale, fontclrHig);
             y += UIManager::getGlyphSize().second * scale;
