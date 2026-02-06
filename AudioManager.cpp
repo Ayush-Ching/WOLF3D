@@ -80,8 +80,9 @@ void AudioManager::loadMusic(const std::string& name, const std::string& path)
     musicTracks.emplace(name, MixMusicPtr(music, Mix_FreeMusic));
 }
 
-void AudioManager::loadAllAudios(const char* filePath)
+void AudioManager::loadAllAudios(std::string f)
 {
+    const char* filePath = f.c_str();
     std::ifstream file(filePath);
     if (!file.is_open()) {
         std::cerr << "Failed to open audio list: " << filePath << '\n';

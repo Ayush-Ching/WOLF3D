@@ -53,7 +53,7 @@ void drawFilledRectWithBorder(
 
 class UIManager {
 public:
-    static void loadTextures(const char* filePath, SDL_Renderer& r);
+    static void loadTextures(std::string filePath, SDL_Renderer& r);
     static void loadFont(const char* charsetAndFilePath, SDL_Renderer& renderer);
     static int getGlyphIndex(char c);
     static std::pair<int, int> getGlyphSize();

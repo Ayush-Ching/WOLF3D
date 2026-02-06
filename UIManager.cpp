@@ -60,7 +60,8 @@ static const char* weaponTypeToString(WeaponType w)
     }
 }
 
-void UIManager::loadTextures(const char* filePath, SDL_Renderer& rend){
+void UIManager::loadTextures(std::string f, SDL_Renderer& rend){
+    const char* filePath = f.c_str();
     std::ifstream file(filePath);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open texture list file: " << filePath << "\n";

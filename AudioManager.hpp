@@ -17,7 +17,7 @@ public:
     static void init();
     static void loadSoundEffect(const std::string& name, const std::string& path);
     static void loadMusic(const std::string& name, const std::string& path);
-    static void loadAllAudios(const char* configFilePath);
+    static void loadAllAudios(std::string configFilePath);
     static void playSFX(const std::string& name, int volume);
     static void playSpatialSFX(const std::string& name,
         float distance,

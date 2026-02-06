@@ -68,19 +68,19 @@ public:
     void render();
     void clean();
     bool running(){return isRunning;}
-    void loadMapDataFromFile(const char* filename);
+    void loadMapDataFromFile(std::string filename);
     void loadColorConfigFromFile(const char* filename);
     void placePlayerAt(float x, float y, float angle);
     void printPlayerPosition();
     void addWallTexture(const char* filePath);
     bool isDoor(int tileValue);
     bool playerHasKey(int keyType);
-    void loadAllTextures(const char* filePath);
+    void loadAllTextures(std::string filePath);
     void addEnemy(float x, float y, float angle);
-    void loadEnemyTextures(const char* filePath);
+    void loadEnemyTextures(std::string filePath);
     bool collidesWithEnemy(float x, float y);
     bool canShootEnemy(float dist);
-    void loadEnemies(const char* filePath);
+    void loadEnemies(std::string filePath);
     void acquireKey(int keyType);
     void loadKeysTexture(const char* filePath);
     void acquireWeapon(int weaponType);
@@ -91,7 +91,7 @@ public:
     void loadAmmoPackTexture(const char* filePath);
     void spawnRandomAmmoPack(std::pair<int, int>);
     void addDecorationTexture(char x, const char* filePath);
-    void loadDecorationTextures(const char* filePath);
+    void loadDecorationTextures(std::string filePath);
     void loadDoorFrame(const char* filePath);
     SDL_Renderer& getRenderer();
     const SDL_Renderer& getRenderer() const;

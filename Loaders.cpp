@@ -1,7 +1,7 @@
 #include "Game.hpp"
 #include <fstream>
 #include <sstream>
-void Game::loadMapDataFromFile(const char* filename)
+void Game::loadMapDataFromFile(std::string filename)
 {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -167,8 +167,9 @@ void Game::loadMapDataFromFile(const char* filename)
 }
 
 
-void Game::loadAllTextures(const char* filePath)
+void Game::loadAllTextures(std::string f)
 {
+    const char* filePath = f.c_str();
     std::ifstream file(filePath);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open texture list file: " << filePath << "\n";
@@ -270,8 +271,9 @@ void Game::loadExitFrame(const char* filePath){
     std::cout << "exit "<<i+1<<"\n";
 }
 
-void Game::loadEnemyTextures(const char* filePath)
+void Game::loadEnemyTextures(std::string f)
 {
+    const char* filePath = f.c_str();
     std::ifstream file(filePath);
     if (!file.is_open()) {
         std::cerr << "Failed to open file: " << filePath << "\n";
@@ -312,8 +314,9 @@ void Game::loadEnemyTextures(const char* filePath)
 }
 
 
-void Game::loadEnemies(const char* filePath)
+void Game::loadEnemies(std::string f)
 {
+    const char* filePath = f.c_str();
     std::ifstream file(filePath);
     if (!file.is_open())
     {
@@ -422,8 +425,9 @@ void Game::loadAmmoPackTexture(const char* filePath){
     ammoPackTextures.emplace_back(raw, SDL_DestroyTexture);
 }
 
-void Game::loadDecorationTextures(const char* filePath)
+void Game::loadDecorationTextures(std::string f)
 {
+    const char* filePath = f.c_str();
     std::ifstream file(filePath);
     if (!file.is_open()) {
         std::cerr << "Failed to open decoration texture file: "

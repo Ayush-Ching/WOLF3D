@@ -3,39 +3,27 @@
 #include "UIManager.hpp"
 #include "MenuManager.hpp"
 #include <iostream>
-#include <unistd.h>
-#include <libgen.h>
-#include <mach-o/dyld.h>
-
-void setWorkingDirectoryToExecutable()
-{
-    char path[1024];
-    uint32_t size = sizeof(path);
-
-    if (_NSGetExecutablePath(path, &size) == 0) {
-        chdir(dirname(path));
-    }
-}
+#include "path_utils.h"
 
 Game* game = nullptr;
 
 int main(int argc, char* argv[]) {
-    setWorkingDirectoryToExecutable();
+    std::string base = getExeDir();
     // Initialisation
     game = new Game();
     // Loading Enemies
-    game->loadEnemies("enemies.txt");
+    game->loadEnemies(base + "/enemies.txt");
 
     // Initialize Game (player and enemies)
     game->init("My Game", 100, 100, 800, 600, true);
     
     // Load Map, Textures and Audio
-    game->loadAllTextures("textureMapping.txt");
-    game->loadEnemyTextures("enemyFrames.txt");
-    game->loadDecorationTextures("Decorations.txt");
-    AudioManager::loadAllAudios("audioConfig.txt");
-    UIManager::loadTextures("HUD.txt", game->getRenderer());
-    game->loadMapDataFromFile("map.txt");
+    game->loadAllTextures(base + "/textureMapping.txt");
+    game->loadEnemyTextures(base + "/enemyFrames.txt");
+    game->loadDecorationTextures(base + "/Decorations.txt");
+    AudioManager::loadAllAudios(base + "/audioConfig.txt");
+    UIManager::loadTextures(base + "/HUD.txt", game->getRenderer());
+    game->loadMapDataFromFile(base + "/map.txt");
 
     // Place Player
     game->placePlayerAt(1.5f, 1.5f, 0.0f);
