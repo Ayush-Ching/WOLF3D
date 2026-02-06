@@ -101,9 +101,16 @@ public:
     GameState state = GameState::GAMEPLAY;
     void restart();
     void loadExitFrame(const char* filePath);
+    bool getMouseCapture() const { return captured_mouse; }
+    bool freeMouse() {
+        SDL_ShowCursor(SDL_ENABLE);
+        SDL_SetRelativeMouseMode(SDL_FALSE);
+        captured_mouse = false;
+        return true;
+    }
 private:
 
-    bool isRunning;
+    bool isRunning, captured_mouse = false;
     SDLWindowPtr   window   {nullptr, SDL_DestroyWindow};
     SDLRendererPtr renderer {nullptr, SDL_DestroyRenderer};
     float playerAngle, FOV=45.0f, playerSpeed=5.0f, rotationSensitivity=0.05f;

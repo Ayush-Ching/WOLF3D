@@ -16,6 +16,7 @@ void Game::handleEvents()
         {
             SDL_ShowCursor(SDL_DISABLE);
             SDL_SetRelativeMouseMode(SDL_TRUE);   // capture mouse
+            captured_mouse = true;
             //std::cout << "Mouse captured\n";
             if(!hasShot && weapons.size() > 0){
                 if(weapons[currentWeapon].ammo == 0 && currentWeapon > 1){

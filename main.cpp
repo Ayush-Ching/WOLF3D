@@ -71,6 +71,7 @@ int main(int argc, char* argv[]) {
             if (MenuManager::handleEvents(game->state))
                 game->quit();
             MenuManager::renderMenu(game->getRenderer(), {800, 600});
+            game->freeMouse();
             break;
         }
         
