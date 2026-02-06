@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) {
     game->loadEnemies("enemies.txt");
 
     // Initialize Game (player and enemies)
-    game->init("My Game", 100, 100, 800, 600, false);
+    game->init("My Game", 100, 100, 800, 600, true);
     
     // Load Map, Textures and Audio
     game->loadAllTextures("textureMapping.txt");
