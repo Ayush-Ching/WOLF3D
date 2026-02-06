@@ -6,6 +6,11 @@ This project is a recreation of classic early‑90s FPS mechanics: grid‑based 
 > ⚠️ This is **not** a clone of the original Wolfenstein 3D assets or code. All logic is written from scratch.
 
 ---
+## Demo
+
+<img src="DEMO.gif" alt="Alt text" width="400" height="250">
+
+---
 
 ## Features
 
