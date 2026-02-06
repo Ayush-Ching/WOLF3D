@@ -12,18 +12,18 @@ int main(int argc, char* argv[]) {
     // Initialisation
     game = new Game();
     // Loading Enemies
-    game->loadEnemies(base + "/enemies.txt");
+    game->loadEnemies(base + "/config/enemies.txt");
 
     // Initialize Game (player and enemies)
-    game->init("My Game", 100, 100, 800, 600, true);
+    game->init("ESCAPE", 100, 100, 800, 600, true);
     
     // Load Map, Textures and Audio
-    game->loadAllTextures(base + "/textureMapping.txt");
-    game->loadEnemyTextures(base + "/enemyFrames.txt");
-    game->loadDecorationTextures(base + "/Decorations.txt");
-    AudioManager::loadAllAudios(base + "/audioConfig.txt");
-    UIManager::loadTextures(base + "/HUD.txt", game->getRenderer());
-    game->loadMapDataFromFile(base + "/map.txt");
+    game->loadAllTextures(base + "/config/textureMapping.txt");
+    game->loadEnemyTextures(base + "/config/enemyFrames.txt");
+    game->loadDecorationTextures(base + "/config/Decorations.txt");
+    AudioManager::loadAllAudios(base + "/config/audioConfig.txt");
+    UIManager::loadTextures(base + "/config/HUD.txt", game->getRenderer());
+    game->loadMapDataFromFile(base + "/config/map.txt");
 
     // Place Player
     game->placePlayerAt(1.5f, 1.5f, 0.0f);
