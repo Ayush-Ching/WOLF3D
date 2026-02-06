@@ -114,7 +114,7 @@ void resume(GameState& state){
     AudioManager::stopMusic();
 }
 void MenuManager::Init(SDL_Renderer& r){
-    loadCursorImage("Textures/Red_triangle.svg", r);
+    loadCursorImage("Textures/cursor.png", r);
     currentMenu = Menu::MAIN;
 
     // Binding actions
