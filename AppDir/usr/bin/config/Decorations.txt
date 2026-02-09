@@ -1,0 +1,7 @@
+I : Textures/Decorations/0lamp.png
+l : Textures/Decorations/0light-1.png
+L : Textures/Decorations/0light-2.png
+i : Textures/Decorations/0light-3.png
+t : Textures/Decorations/0plant-1.png
+T : Textures/Decorations/0plant-2.png
+W : Textures/Decorations/0water.png
